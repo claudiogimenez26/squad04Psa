@@ -1,13 +1,13 @@
-package psa.cargahoras;
+package psa.cargahoras.entity;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 import java.time.LocalDate;
 import org.junit.Test;
-import psa.cargahoras.Proyecto.Estado;
+import psa.cargahoras.entity.ProyectoEntity.Estado;
 
-public class ProyectoTest {
+public class ProyectoEntityTest {
   @Test
   public void constructorProyecto() {
     String nombre = "MVP carga de horas";
@@ -15,7 +15,7 @@ public class ProyectoTest {
     Estado estado = Estado.Activo;
     String fechaInicioStr = "11/11/2024";
 
-    Proyecto proyecto = new Proyecto(nombre, coeficienteRiesgo, estado, fechaInicioStr);
+    ProyectoEntity proyecto = new ProyectoEntity(nombre, coeficienteRiesgo, estado, fechaInicioStr);
 
     assertEquals(nombre, proyecto.getNombre());
     assertEquals(coeficienteRiesgo, proyecto.getCoeficienteRiesgo());
@@ -34,7 +34,7 @@ public class ProyectoTest {
         assertThrows(
             IllegalArgumentException.class,
             () -> {
-              new Proyecto(nombre, coeficienteRiesgo, estado, fechaInicioStr);
+              new ProyectoEntity(nombre, coeficienteRiesgo, estado, fechaInicioStr);
             });
 
     assertEquals(
@@ -52,7 +52,7 @@ public class ProyectoTest {
         assertThrows(
             IllegalArgumentException.class,
             () -> {
-              new Proyecto(nombre, coeficienteRiesgo, estado, fechaInicioStr);
+              new ProyectoEntity(nombre, coeficienteRiesgo, estado, fechaInicioStr);
             });
 
     assertEquals(
@@ -70,7 +70,7 @@ public class ProyectoTest {
         assertThrows(
             IllegalArgumentException.class,
             () -> {
-              new Proyecto(nombre, coeficienteRiesgo, estado, fechaInicioStr);
+              new ProyectoEntity(nombre, coeficienteRiesgo, estado, fechaInicioStr);
             });
 
     assertEquals("Formato de fecha debe ser dd/MM/yyyy", exception.getMessage());

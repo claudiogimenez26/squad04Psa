@@ -1,27 +1,41 @@
-package psa.cargahoras;
+package psa.cargahoras.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.UUID;
 
-public class Proyecto {
+@Entity(name = "tbl_proyectos")
+public class ProyectoEntity {
   public enum Estado {
-    // TODO: tenemos que definir esto en el diccionario de datos.
     Activo,
     Pausado,
     Finalizado
   }
 
-  private final UUID id;
-  private String nombre;
-  private double coeficienteRiesgo;
+  @Id @GeneratedValue private UUID id;
+
+  @Column private String nombre;
+
+  @Column private double coeficienteRiesgo;
+
+  @Enumerated(EnumType.STRING)
   private Estado estado;
-  private LocalDate fechaInicio;
+
+  @Column private LocalDate fechaInicio;
 
   public static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-  public Proyecto(String nombre, double coeficienteRiesgo, Estado estado, String fechaInicioStr) {
+  protected ProyectoEntity() {}
+
+  public ProyectoEntity(
+      String nombre, double coeficienteRiesgo, Estado estado, String fechaInicioStr) {
     if (coeficienteRiesgo < 0 || coeficienteRiesgo > 1) {
       throw new IllegalArgumentException(
           "Coeficiente de riesgo debe estar entre 0 y 1 (inclusive).");

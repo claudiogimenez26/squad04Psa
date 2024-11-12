@@ -1,0 +1,11 @@
+name: psa-carga-horas
+services:
+  base-de-datos:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: psa_db
+    ports:
+      - "5432:5432"
