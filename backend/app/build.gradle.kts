@@ -20,6 +20,8 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation("io.cucumber:cucumber-java:7.20.1")
     testImplementation("io.cucumber:cucumber-junit:7.20.1")
+    testImplementation("org.mockito:mockito-core:4.11.0")
+    testImplementation("org.mockito:mockito-inline:4.11.0")
 }
 
 java {
