@@ -1,22 +1,22 @@
 package psa.cargahoras.cucumber;
 
+import static org.junit.Assert.*;
+
 import io.cucumber.java.es.Cuando;
 import io.cucumber.java.es.Dado;
 import io.cucumber.java.es.Entonces;
-import psa.cargahoras.entity.ProyectoEntity;
-import psa.cargahoras.entity.TareaEntity;
-
-import static org.junit.Assert.*;
+import psa.cargahoras.entity.Proyecto;
+import psa.cargahoras.entity.Tarea;
 
 public class tareaEntitySteps {
 
-  private ProyectoEntity proyecto;
-  private TareaEntity tarea;
+  private Proyecto proyecto;
+  private Tarea tarea;
   private Exception exception;
 
   @Dado("un proyecto")
   public void un_proyecto() {
-    proyecto = new ProyectoEntity("Proyecto de prueba", 0.5, ProyectoEntity.Estado.Activo, "11/11/2024");
+    proyecto = new Proyecto("Proyecto de prueba", 0.5, Proyecto.Estado.Activo, "11/11/2024");
   }
 
   @Dado("un proyecto inexistente")
@@ -26,13 +26,13 @@ public class tareaEntitySteps {
 
   @Cuando("creo una tarea asociada con ese proyecto")
   public void creo_una_tarea_asociada_con_ese_proyecto() {
-    tarea = new TareaEntity("Tarea de prueba", proyecto);
+    tarea = new Tarea("Tarea de prueba", proyecto);
   }
 
   @Cuando("intento crear una tarea asociada con ese proyecto inexistente")
   public void intento_crear_una_tarea_asociada_con_ese_proyecto_inexistente() {
     try {
-      tarea = new TareaEntity("Tarea de prueba", proyecto);
+      tarea = new Tarea("Tarea de prueba", proyecto);
     } catch (Exception e) {
       exception = e;
     }
