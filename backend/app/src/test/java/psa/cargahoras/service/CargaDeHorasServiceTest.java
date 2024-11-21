@@ -36,23 +36,25 @@ public class CargaDeHorasServiceTest {
 
   @Test
   public void agregarCargaDeHorasADiferentesTareasConUnMismoRecurso() {
-    UUID recursoId = UUID.randomUUID();
     Recurso recurso = mock(Recurso.class);
+    when(recurso.getId()).thenReturn(UUID.randomUUID());
 
-    UUID tareaId1 = UUID.randomUUID();
-    UUID tareaId2 = UUID.randomUUID();
     Tarea tarea1 = mock(Tarea.class);
     Tarea tarea2 = mock(Tarea.class);
+    when(tarea1.getId()).thenReturn(UUID.randomUUID());
+    when(tarea2.getId()).thenReturn(UUID.randomUUID());
 
-    when(recursoRepository.findById(recursoId)).thenReturn(Optional.of(recurso));
-    when(tareaRepository.findById(tareaId1)).thenReturn(Optional.of(tarea1));
-    when(tareaRepository.findById(tareaId2)).thenReturn(Optional.of(tarea2));
+    when(recursoRepository.findById(recurso.getId())).thenReturn(Optional.of(recurso));
+    when(tareaRepository.findById(tarea1.getId())).thenReturn(Optional.of(tarea1));
+    when(tareaRepository.findById(tarea2.getId())).thenReturn(Optional.of(tarea2));
 
     String fechaCargaStr = "19/11/2024";
     double cantidadHoras = 8.0;
 
-    cargaDeHorasService.registrarNuevaCarga(tareaId1, recursoId, fechaCargaStr, cantidadHoras);
-    cargaDeHorasService.registrarNuevaCarga(tareaId2, recursoId, fechaCargaStr, cantidadHoras);
+    cargaDeHorasService.registrarNuevaCarga(
+        tarea1.getId(), recurso.getId(), fechaCargaStr, cantidadHoras);
+    cargaDeHorasService.registrarNuevaCarga(
+        tarea2.getId(), recurso.getId(), fechaCargaStr, cantidadHoras);
 
     CargaDeHoras carga1 = new CargaDeHoras(tarea1, recurso, fechaCargaStr, cantidadHoras);
     CargaDeHoras carga2 = new CargaDeHoras(tarea2, recurso, fechaCargaStr, cantidadHoras);
@@ -63,29 +65,30 @@ public class CargaDeHorasServiceTest {
 
   @Test
   public void agregarCargaDeHorasAUnaMismaTareaConDiferentesRecursosTiraExcepcion() {
-    UUID tareaId = UUID.randomUUID();
     Tarea tarea = mock(Tarea.class);
+    when(tarea.getId()).thenReturn(UUID.randomUUID());
 
-    UUID recursoId1 = UUID.randomUUID();
     Recurso recurso1 = mock(Recurso.class);
-
-    UUID recursoId2 = UUID.randomUUID();
     Recurso recurso2 = mock(Recurso.class);
+    when(recurso1.getId()).thenReturn(UUID.randomUUID());
+    when(recurso2.getId()).thenReturn(UUID.randomUUID());
 
     CargaDeHoras cargaPrevia = new CargaDeHoras(tarea, recurso1, "10/11/2024", 8.0);
 
-    when(recurso1.getId()).thenReturn(recursoId1);
-
-    when(tareaRepository.findById(tareaId)).thenReturn(Optional.of(tarea));
-    when(recursoRepository.findById(recursoId2)).thenReturn(Optional.of(recurso2));
-    when(cargaDeHorasRepository.findByTareaId(tareaId)).thenReturn(Arrays.asList(cargaPrevia));
+    when(tareaRepository.findById(tarea.getId())).thenReturn(Optional.of(tarea));
+    when(recursoRepository.findById(recurso2.getId())).thenReturn(Optional.of(recurso2));
+    when(cargaDeHorasRepository.findByTareaId(tarea.getId()))
+        .thenReturn(Arrays.asList(cargaPrevia));
 
     Exception e =
         assertThrows(
             IllegalArgumentException.class,
-            () -> cargaDeHorasService.registrarNuevaCarga(tareaId, recursoId2, "19/11/2024", 8.0));
+            () ->
+                cargaDeHorasService.registrarNuevaCarga(
+                    tarea.getId(), recurso2.getId(), "19/11/2024", 8.0));
 
-    assertEquals("Esta tarea ya está asignada al recurso con ID: " + recursoId1, e.getMessage());
+    assertEquals(
+        "Esta tarea ya está asignada al recurso con ID: " + recurso1.getId(), e.getMessage());
 
     verify(cargaDeHorasRepository, never()).save(any());
   }
@@ -94,6 +97,7 @@ public class CargaDeHorasServiceTest {
   public void obtenerTodasLasCargas() {
     Tarea tarea = mock(Tarea.class);
     Recurso recurso = mock(Recurso.class);
+
     String fechaCargaStr = "19/11/2024";
     double cantidadHoras = 8.0;
 
@@ -131,16 +135,14 @@ public class CargaDeHorasServiceTest {
 
   @Test
   public void cargarHorasDeRecursoInexistenteTiraExcepcion() {
-    UUID tareaId = UUID.randomUUID();
-    UUID recursoId = UUID.randomUUID();
     Tarea tarea = mock(Tarea.class);
+    when(tarea.getId()).thenReturn(UUID.randomUUID());
+
     Recurso recurso = mock(Recurso.class);
+    when(recurso.getId()).thenReturn(UUID.randomUUID());
 
-    when(tarea.getId()).thenReturn(tareaId);
-    when(recurso.getId()).thenReturn(recursoId);
-
-    when(tareaRepository.findById(tareaId)).thenReturn(Optional.of(tarea));
-    when(recursoRepository.findById(recursoId)).thenReturn(Optional.empty());
+    when(tareaRepository.findById(tarea.getId())).thenReturn(Optional.of(tarea));
+    when(recursoRepository.findById(recurso.getId())).thenReturn(Optional.empty());
 
     Exception e =
         assertThrows(
@@ -149,7 +151,7 @@ public class CargaDeHorasServiceTest {
                 cargaDeHorasService.registrarNuevaCarga(
                     tarea.getId(), recurso.getId(), "19/11/2024", 8.0));
 
-    assertEquals("No existe el recurso con ID: " + recursoId, e.getMessage());
+    assertEquals("No existe el recurso con ID: " + recurso.getId(), e.getMessage());
 
     verify(cargaDeHorasRepository, never()).save(any());
   }
