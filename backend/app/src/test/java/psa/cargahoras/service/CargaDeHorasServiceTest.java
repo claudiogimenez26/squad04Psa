@@ -83,7 +83,6 @@ public class CargaDeHorasServiceTest {
 
     EstadoTarea estadoActivo = new EstadoTarea(tarea.getId(), true);
     when(estadoTareaRepository.findById(tarea.getId())).thenReturn(Optional.of(estadoActivo));
-
     CargaDeHoras cargaPrevia = new CargaDeHoras(tarea, recurso1, "10/11/2024", 8.0);
 
     when(tareaRepository.findById(tarea.getId())).thenReturn(Optional.of(tarea));
