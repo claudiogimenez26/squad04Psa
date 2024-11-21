@@ -214,7 +214,7 @@ public class CargaDeHorasServiceTest {
             IllegalArgumentException.class,
             () -> cargaDeHorasService.registrarNuevaCarga(tareaId, recursoId, "19/11/2024", 8.0));
 
-    assertEquals("No se pueden agregar horas a una tarea pausada", e.getMessage());
+    assertEquals("No se pueden cargar horas a una tarea pausada", e.getMessage());
 
     verify(cargaDeHorasRepository, never()).save(any());
   }

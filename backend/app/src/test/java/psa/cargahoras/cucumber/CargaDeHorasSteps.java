@@ -154,7 +154,7 @@ public class CargaDeHorasSteps {
     when(recursoRepository.existsById(recurso.getId())).thenReturn(false);
   }
 
-  @Dado("una tarea con id inexistente {string}")
+  @Y("una tarea con id inexistente {string}")
   public void dadoUnaTareaConIdInexistente(String tareaId) {
     tarea =
         new Tarea(
@@ -164,6 +164,19 @@ public class CargaDeHorasSteps {
             mock(Proyecto.class));
 
     when(tareaRepository.findById(tarea.getId())).thenReturn(Optional.empty());
-    when(tareaRepository.existsById(tarea.getId())).thenReturn(false);
+  }
+
+  @Y("una tarea pausada con id {string}")
+  public void dadoUnaTareaPausada(String tareaId) {
+    tarea =
+        new Tarea(
+            UUID.fromString(tareaId),
+            "Terminar el backend",
+            "Se debe finalizar la creación de los endpoints y las entidades correspondientes",
+            mock(Proyecto.class));
+
+    when(tareaRepository.findById(tarea.getId())).thenReturn(Optional.of(tarea));
+    when(estadoTareaRepository.findById(tarea.getId()))
+        .thenReturn(Optional.of(new EstadoTarea(tarea.getId(), false)));
   }
 }

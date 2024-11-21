@@ -49,7 +49,7 @@ public class CargaDeHorasService {
                         "No existe estado para la tarea con ID: " + idTarea));
 
     if (!estado.getActiva()) {
-      throw new IllegalArgumentException("No se pueden agregar horas a una tarea pausada");
+      throw new IllegalArgumentException("No se pueden cargar horas a una tarea pausada");
     }
 
     Recurso recurso =
