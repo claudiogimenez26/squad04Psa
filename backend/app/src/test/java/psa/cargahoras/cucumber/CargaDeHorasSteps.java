@@ -1,6 +1,7 @@
 package psa.cargahoras.cucumber;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 
 import io.cucumber.java.Before;
@@ -42,19 +43,22 @@ public class CargaDeHorasSteps {
   }
 
   @Before
-  public void resetearAntes() {
+  public void resetear() {
     MockitoAnnotations.openMocks(this);
+
     cargaDeHorasService =
         new CargaDeHorasService(cargaDeHorasRepository, tareaRepository, recursoRepository);
+
+    recurso = null;
+    tarea = null;
     cargaDeHoras = null;
   }
 
   @Dado("un recurso con id {string}")
   public void dadoUnRecursoConId(String id) {
-    recurso = new Recurso(UUID.fromString(id), "Carlos", "Castillo", 96113425, dummyRol());
+    recurso = new Recurso(UUID.fromString(id), "Carlos", "Castillo", 96113425, mock(Rol.class));
 
-    when(recursoRepository.findById(UUID.fromString(id))).thenReturn(Optional.of(recurso));
-    when(recursoRepository.existsById(UUID.fromString(id))).thenReturn(true);
+    when(recursoRepository.findById(recurso.getId())).thenReturn(Optional.of(recurso));
   }
 
   @Y("una tarea con id {string}")
@@ -64,22 +68,23 @@ public class CargaDeHorasSteps {
             UUID.fromString(id),
             "Terminar el backend",
             "Se debe finalizar la creación de los endpoints y las entidades correspondientes",
-            dummyProyecto());
+            mock(Proyecto.class));
 
-    when(tareaRepository.findById(UUID.fromString(id))).thenReturn(Optional.of(tarea));
-    when(tareaRepository.existsById(UUID.fromString(id))).thenReturn(true);
+    when(tareaRepository.findById(tarea.getId())).thenReturn(Optional.of(tarea));
   }
 
   @Cuando("el recurso realiza una carga de {double} horas a la tarea en la fecha {string}")
   public void cuandoElRecursoCargaHorasATareaEnFecha(double cantidadHoras, String fechaDateStr) {
-    resultadoOperacion.ejecutar(
-        () ->
-            cargaDeHorasService.registrarNuevaCarga(
-                tarea.getId(), recurso.getId(), fechaDateStr, cantidadHoras));
+    cargaDeHoras =
+        resultadoOperacion.ejecutar(
+            () ->
+                cargaDeHorasService.registrarNuevaCarga(
+                    tarea.getId(), recurso.getId(), fechaDateStr, cantidadHoras));
   }
 
   @Y("la carga de horas debe ser registrada")
   public void verificarCargaDeHorasRegistrada() {
+    assertNotNull(cargaDeHoras);
     verify(cargaDeHorasRepository).save(any(CargaDeHoras.class));
   }
 
@@ -95,24 +100,33 @@ public class CargaDeHorasSteps {
 
   @Y("la cantidad de horas de la carga de horas debe ser {double} horas")
   public void verificarCantidadHorasCargaDeHoras(double cantidadHoras) {
-    assertEquals(cargaDeHoras.getCantidadHoras(), cantidadHoras, 0.0);
+    assertEquals(cantidadHoras, cargaDeHoras.getCantidadHoras(), 0.0);
   }
 
   @Y("la fecha de carga de horas debe ser {string}")
   public void verificarFechaCargaDeHoras(String fechaDateStr) {
-    assertEquals(cargaDeHoras.getFechaCarga().format(CargaDeHoras.formatterFecha), fechaDateStr);
+    assertEquals(fechaDateStr, cargaDeHoras.getFechaCarga().format(CargaDeHoras.formatterFecha));
   }
 
   @Y(
       "una carga de horas registradas para la tarea con id {string}, y recurso con id {string}, en la fecha {string}")
   public void dadaUnaCargaDeHorasParaTareaDeRecurso(
       String tareaId, String recursoId, String fechaDateStr) {
-    Recurso recursoPrevio =
-        new Recurso(UUID.fromString(recursoId), "Flavio", "Castillo", 97116471, dummyRol());
+    UUID recursoIdUUID = UUID.fromString(recursoId);
+
+    Recurso recursoPrevio;
+
+    if (recurso.getId() != recursoIdUUID) {
+      recursoPrevio = new Recurso(recursoIdUUID, "Flavio", "Castillo", 97116471, mock(Rol.class));
+    } else {
+      recursoPrevio = recurso;
+    }
+
+    assertEquals(UUID.fromString(tareaId), tarea.getId());
 
     CargaDeHoras cargaPrevia = new CargaDeHoras(tarea, recursoPrevio, fechaDateStr, 8.0);
-    when(cargaDeHorasRepository.findByTareaId(UUID.fromString(tareaId)))
-        .thenReturn(List.of(cargaPrevia));
+
+    when(cargaDeHorasRepository.findByTareaId(tarea.getId())).thenReturn(List.of(cargaPrevia));
   }
 
   @Entonces("la carga de horas no debe ser registrada")
@@ -126,22 +140,24 @@ public class CargaDeHorasSteps {
   }
 
   @Dado("un recurso con id inexistente {string}")
-  public void dadoUnRecursoConIdInexistente(String id) {
-    when(recursoRepository.findById(UUID.fromString(id))).thenReturn(Optional.empty());
-    when(recursoRepository.existsById(UUID.fromString(id))).thenReturn(false);
+  public void dadoUnRecursoConIdInexistente(String recursoId) {
+    recurso =
+        new Recurso(UUID.fromString(recursoId), "Carlos", "Castillo", 96113425, mock(Rol.class));
+
+    when(recursoRepository.findById(recurso.getId())).thenReturn(Optional.empty());
+    when(recursoRepository.existsById(recurso.getId())).thenReturn(false);
   }
 
   @Dado("una tarea con id inexistente {string}")
-  public void dadoUnaTareaConIdInexistente(String id) {
-    when(tareaRepository.findById(UUID.fromString(id))).thenReturn(Optional.empty());
-    when(tareaRepository.existsById(UUID.fromString(id))).thenReturn(false);
-  }
+  public void dadoUnaTareaConIdInexistente(String tareaId) {
+    tarea =
+        new Tarea(
+            UUID.fromString(tareaId),
+            "Terminar el backend",
+            "Se debe finalizar la creación de los endpoints y las entidades correspondientes",
+            mock(Proyecto.class));
 
-  private Rol dummyRol() {
-    return new Rol(UUID.randomUUID(), "Desarrollador", "Junior", 1_000_000.0);
-  }
-
-  private Proyecto dummyProyecto() {
-    return new Proyecto(UUID.randomUUID(), "Proyecto 1", "Proyecto dummy para simular las pruebas");
+    when(tareaRepository.findById(tarea.getId())).thenReturn(Optional.empty());
+    when(tareaRepository.existsById(tarea.getId())).thenReturn(false);
   }
 }

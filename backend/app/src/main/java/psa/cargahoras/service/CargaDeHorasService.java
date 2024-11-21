@@ -27,7 +27,7 @@ public class CargaDeHorasService {
     this.recursoRepository = recursoRepository;
   }
 
-  public void registrarNuevaCarga(
+  public CargaDeHoras registrarNuevaCarga(
       UUID idTarea, UUID idRecurso, String fechaCargaStr, double cantidadDeHoras) {
     Tarea tarea =
         tareaRepository
@@ -53,6 +53,8 @@ public class CargaDeHorasService {
     CargaDeHoras nuevaCarga = new CargaDeHoras(tarea, recurso, fechaCargaStr, cantidadDeHoras);
 
     cargaHorasRepository.save(nuevaCarga);
+
+    return nuevaCarga;
   }
 
   public List<CargaDeHoras> obtenerTodasLasCargas() {
