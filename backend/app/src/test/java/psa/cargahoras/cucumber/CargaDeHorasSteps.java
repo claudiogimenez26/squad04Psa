@@ -16,11 +16,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import psa.cargahoras.entity.CargaDeHoras;
+import psa.cargahoras.entity.EstadoTarea;
 import psa.cargahoras.entity.Proyecto;
 import psa.cargahoras.entity.Recurso;
 import psa.cargahoras.entity.Rol;
 import psa.cargahoras.entity.Tarea;
 import psa.cargahoras.repository.CargaDeHorasRepository;
+import psa.cargahoras.repository.EstadoTareaRepository;
 import psa.cargahoras.repository.RecursoRepository;
 import psa.cargahoras.repository.TareaRepository;
 import psa.cargahoras.service.CargaDeHorasService;
@@ -35,6 +37,7 @@ public class CargaDeHorasSteps {
   @Mock private RecursoRepository recursoRepository;
   @Mock private TareaRepository tareaRepository;
   @Mock private CargaDeHorasRepository cargaDeHorasRepository;
+  @Mock private EstadoTareaRepository estadoTareaRepository;
 
   @Autowired private CargaDeHorasService cargaDeHorasService;
 
@@ -47,7 +50,8 @@ public class CargaDeHorasSteps {
     MockitoAnnotations.openMocks(this);
 
     cargaDeHorasService =
-        new CargaDeHorasService(cargaDeHorasRepository, tareaRepository, recursoRepository);
+        new CargaDeHorasService(
+            cargaDeHorasRepository, tareaRepository, recursoRepository, estadoTareaRepository);
 
     recurso = null;
     tarea = null;
@@ -61,7 +65,7 @@ public class CargaDeHorasSteps {
     when(recursoRepository.findById(recurso.getId())).thenReturn(Optional.of(recurso));
   }
 
-  @Y("una tarea con id {string}")
+  @Y("una tarea activa con id {string}")
   public void dadaUnaTareaConId(String id) {
     tarea =
         new Tarea(
@@ -71,6 +75,8 @@ public class CargaDeHorasSteps {
             mock(Proyecto.class));
 
     when(tareaRepository.findById(tarea.getId())).thenReturn(Optional.of(tarea));
+    when(estadoTareaRepository.findById(tarea.getId()))
+        .thenReturn(Optional.of(new EstadoTarea(tarea.getId(), true)));
   }
 
   @Cuando("el recurso realiza una carga de {double} horas a la tarea en la fecha {string}")

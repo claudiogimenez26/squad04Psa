@@ -3,7 +3,7 @@
 Requisito: Carga de horas
   Escenario: Se cargan horas a una tarea exitosamente
     Dado un recurso con id '48655ef6-6997-407a-b544-91f91c3fde6f'
-    Y una tarea con id '52400cce-f973-480c-b131-c038b021806e'
+    Y una tarea activa con id '52400cce-f973-480c-b131-c038b021806e'
     Cuando el recurso realiza una carga de 8.0 horas a la tarea en la fecha '19/11/2024'
     Entonces la operación debe ser exitosa
     Y la carga de horas debe ser registrada
@@ -14,7 +14,7 @@ Requisito: Carga de horas
 
   Escenario: Un recurso puede volver a cargar horas a una misma tarea
     Dado un recurso con id '48655ef6-6997-407a-b544-91f91c3fde6f'
-    Y una tarea con id '52400cce-f973-480c-b131-c038b021806e'
+    Y una tarea activa con id '52400cce-f973-480c-b131-c038b021806e'
     Y una carga de horas registradas para la tarea con id '52400cce-f973-480c-b131-c038b021806e', y recurso con id '48655ef6-6997-407a-b544-91f91c3fde6f', en la fecha '10/11/2024'
     Cuando el recurso realiza una carga de 8.0 horas a la tarea en la fecha '19/11/2024'
     Entonces la operación debe ser exitosa
@@ -22,7 +22,7 @@ Requisito: Carga de horas
 
   Escenario: Diferentes recursos no pueden cargar horas a una misma tarea
     Dado un recurso con id '5395aa72-91cb-47cc-946f-94fd98896164'
-    Y una tarea con id '52400cce-f973-480c-b131-c038b021806e'
+    Y una tarea activa con id '52400cce-f973-480c-b131-c038b021806e'
     Y una carga de horas registradas para la tarea con id '52400cce-f973-480c-b131-c038b021806e', y recurso con id '48655ef6-6997-407a-b544-91f91c3fde6f', en la fecha '10/11/2024'
     Cuando el recurso realiza una carga de 8.0 horas a la tarea en la fecha '19/11/2024'
     Entonces la operación debe ser declinada
@@ -39,7 +39,7 @@ Requisito: Carga de horas
 
   Escenario: No se pueden cargar horas de un recurso inexistente
     Dado un recurso con id inexistente '99999999-9999-9999-9999-999999999999'
-    Y una tarea con id '52400cce-f973-480c-b131-c038b021806e'
+    Y una tarea activa con id '52400cce-f973-480c-b131-c038b021806e'
     Cuando el recurso realiza una carga de 8.0 horas a la tarea en la fecha '19/11/2024'
     Entonces la operación debe ser declinada
     Y la carga de horas no debe ser registrada
@@ -47,8 +47,16 @@ Requisito: Carga de horas
 
   Escenario: No se pueden cargar horas negativas
     Dado un recurso con id '48655ef6-6997-407a-b544-91f91c3fde6f'
-    Y una tarea con id '52400cce-f973-480c-b131-c038b021806e'
+    Y una tarea activa con id '52400cce-f973-480c-b131-c038b021806e'
     Cuando el recurso realiza una carga de -8.0 horas a la tarea en la fecha '19/11/2024'
     Entonces la operación debe ser declinada
     Y la carga de horas no debe ser registrada
     Y el mensaje de error debe ser 'La cantidad de horas no puede ser negativa'
+
+  Escenario: No se pueden cargar horas a una tarea pausada
+    Dado un recurso con id '48655ef6-6997-407a-b544-91f91c3fde6f'
+    Y una tarea pausada con id '52400cce-f973-480c-b131-c038b021806e'
+    Cuando el recurso realiza una carga de 8.0 horas a la tarea en la fecha '19/11/2024'
+    Entonces la operación debe ser declinada
+    Y la carga de horas no debe ser registrada
+    Y el mensaje de error debe ser 'No se pueden cargar horas a una tarea pausada'
