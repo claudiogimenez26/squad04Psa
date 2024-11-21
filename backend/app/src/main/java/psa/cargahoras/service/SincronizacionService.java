@@ -1,6 +1,8 @@
 package psa.cargahoras.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -8,10 +10,12 @@ import psa.cargahoras.dto.ProyectoDTO;
 import psa.cargahoras.dto.RecursoDTO;
 import psa.cargahoras.dto.RolDTO;
 import psa.cargahoras.dto.TareaDTO;
+import psa.cargahoras.entity.EstadoTarea;
 import psa.cargahoras.entity.Proyecto;
 import psa.cargahoras.entity.Recurso;
 import psa.cargahoras.entity.Rol;
 import psa.cargahoras.entity.Tarea;
+import psa.cargahoras.repository.EstadoTareaRepository;
 import psa.cargahoras.repository.ProyectoRepository;
 import psa.cargahoras.repository.RecursoRepository;
 import psa.cargahoras.repository.RolRepository;
@@ -22,12 +26,10 @@ public class SincronizacionService {
   @Autowired private APIService apiService;
 
   @Autowired private RolRepository rolRepository;
-
   @Autowired private RecursoRepository recursoRepository;
-
   @Autowired private ProyectoRepository proyectoRepository;
-
   @Autowired private TareaRepository tareaRepository;
+  @Autowired private EstadoTareaRepository estadoTareaRepository;
 
   public void sincronizarDatos() {
     System.out.println("Iniciando sincronización de datos...");
@@ -142,6 +144,14 @@ public class SincronizacionService {
       throw new RuntimeException("No se obtuvieron tareas de la API");
     }
 
+    Map<String, Boolean> estadosInicialesTareas = new HashMap<>();
+
+    estadosInicialesTareas.put("f635b4ca-c091-472c-8b5a-cb3086d1973", true);
+    estadosInicialesTareas.put("1635b4ca-c091-472c-8b5a-cb3086d1973", true);
+    estadosInicialesTareas.put("d635b4ca-c091-472c-8b5a-cb3086d1973", false);
+    estadosInicialesTareas.put("b635b4ca-c091-472c-8b5a-cb3086d1973", false);
+    estadosInicialesTareas.put("a635b4ca-c091-472c-8b5a-cb3086d1973", true);
+
     for (TareaDTO dto : tareasDTO) {
       UUID id = UUID.fromString(dto.getId());
       if (!tareaRepository.existsById(id)) {
@@ -153,6 +163,11 @@ public class SincronizacionService {
         Tarea tarea = new Tarea(id, dto.getNombre(), dto.getDescripcion(), proyecto);
         try {
           tareaRepository.save(tarea);
+
+          boolean estadoInicial = estadosInicialesTareas.getOrDefault(dto.getId(), true);
+          EstadoTarea estadoTarea = new EstadoTarea(id, estadoInicial);
+          estadoTareaRepository.save(estadoTarea);
+
         } catch (Exception e) {
           throw new RuntimeException(
               "Error al guardar la tarea en la base de datos - ID: "
