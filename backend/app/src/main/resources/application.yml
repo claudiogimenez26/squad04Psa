@@ -1,6 +1,9 @@
 spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+  jpa:
+    hibernate:
+      ddl-auto: update
 server:
   port: ${PORT:8080}
 ---
@@ -9,12 +12,10 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://0.0.0.0:${DATABASE_PORT:5432}/psa_db}
+    url: jdbc:postgresql://${DATABASE_HOST:0.0.0.0}:${DATABASE_PORT:5432}/${DATABASE_DB:psa_db}
     username: ${DATABASE_USER:postgres}
     password: ${DATABASE_PASSWORD:postgres}
   jpa:
-    hibernate:
-      ddl-auto: update
     show-sql: true
 ---
 spring:
@@ -22,10 +23,8 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: ${DATABASE_URL}
+    url: jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DB}
     username: ${DATABASE_USER}
     password: ${DATABASE_PASSWORD}
   jpa:
-    hibernate:
-      ddl-auto: none
     show-sql: false

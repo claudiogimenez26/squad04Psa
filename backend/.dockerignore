@@ -1,0 +1,9 @@
+**/.classpath
+**/.gradle
+**/.project
+**/.settings
+**/app/bin
+**/build
+Dockerfile
+flake.*
+fly.toml
