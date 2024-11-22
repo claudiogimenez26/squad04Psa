@@ -53,33 +53,33 @@ public class CargaDeHorasService {
         .orElseThrow(() -> new IllegalArgumentException("No existe carga con ID: " + id));
   }
 
-  public CargaDeHoras cargarHoras(
-      String tareaId, String recursoId, double cantidadDeHoras, String fechaCargaStr) {
+  public CargaDeHoras cargarHoras(CargaDeHoras nuevaCarga) {
     boolean existeTarea =
         apiExternaService.getTareas().stream()
-            .anyMatch(tarea -> tarea.getId().equals(tareaId.toString()));
+            .anyMatch(tarea -> tarea.getId().equals(nuevaCarga.getTareaId().toString()));
 
     if (!existeTarea) {
-      throw new IllegalArgumentException("No existe la tarea con ID: " + tareaId);
+      throw new IllegalArgumentException("No existe la tarea con ID: " + nuevaCarga.getTareaId());
     }
 
     boolean existeRecurso =
         apiExternaService.getRecursos().stream()
-            .anyMatch(recurso -> recurso.getId().equals(recursoId.toString()));
+            .anyMatch(recurso -> recurso.getId().equals(nuevaCarga.getRecursoId().toString()));
 
     if (!existeRecurso) {
-      throw new IllegalArgumentException("No existe el recurso con ID: " + recursoId);
+      throw new IllegalArgumentException(
+          "No existe el recurso con ID: " + nuevaCarga.getRecursoId());
     }
 
-    List<CargaDeHoras> cargasExistentes = cargaHorasRepository.findByTareaId(tareaId);
+    List<CargaDeHoras> cargasExistentes =
+        cargaHorasRepository.findByTareaId(nuevaCarga.getTareaId());
 
-    if (!cargasExistentes.isEmpty() && !cargasExistentes.get(0).getRecursoId().equals(recursoId)) {
+    if (!cargasExistentes.isEmpty()
+        && !cargasExistentes.get(0).getRecursoId().equals(nuevaCarga.getRecursoId())) {
       throw new IllegalArgumentException(
           "Esta tarea ya está asignada al recurso con ID: "
               + cargasExistentes.get(0).getRecursoId());
     }
-
-    CargaDeHoras nuevaCarga = new CargaDeHoras(tareaId, recursoId, cantidadDeHoras, fechaCargaStr);
 
     cargaHorasRepository.save(nuevaCarga);
 

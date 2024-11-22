@@ -49,8 +49,10 @@ public class CargaDeHorasServiceTest {
     when(apiExternaService.getTareas()).thenReturn(Arrays.asList(tarea));
     when(apiExternaService.getRecursos()).thenReturn(Arrays.asList(recurso));
 
-    cargaDeHorasService.cargarHoras(tareaId, recursoId, cantidadHoras, fechaCargaStr);
-    cargaDeHorasService.cargarHoras(tareaId, recursoId, cantidadHoras, fechaCargaStr);
+    cargaDeHorasService.cargarHoras(
+        new CargaDeHoras(tareaId, recursoId, cantidadHoras, fechaCargaStr));
+    cargaDeHorasService.cargarHoras(
+        new CargaDeHoras(tareaId, recursoId, cantidadHoras, fechaCargaStr));
 
     verify(cargaDeHorasRepository, times(2)).save(any(CargaDeHoras.class));
   }
@@ -75,9 +77,11 @@ public class CargaDeHorasServiceTest {
     when(apiExternaService.getTareas()).thenReturn(Arrays.asList(tarea));
     when(apiExternaService.getRecursos()).thenReturn(Arrays.asList(recurso1, recurso2));
 
-    cargaDeHorasService.cargarHoras(tareaId, recurso1Id, cantidadHoras, fechaCargaStr);
+    cargaDeHorasService.cargarHoras(
+        new CargaDeHoras(tareaId, recurso1Id, cantidadHoras, fechaCargaStr));
 
-    cargaDeHorasService.cargarHoras(tareaId, recurso2Id, cantidadHoras, fechaCargaStr);
+    cargaDeHorasService.cargarHoras(
+        new CargaDeHoras(tareaId, recurso2Id, cantidadHoras, fechaCargaStr));
 
     verify(cargaDeHorasRepository, times(2)).save(any(CargaDeHoras.class));
   }
@@ -103,9 +107,11 @@ public class CargaDeHorasServiceTest {
     when(apiExternaService.getTareas()).thenReturn(Arrays.asList(tarea1, tarea2));
     when(apiExternaService.getRecursos()).thenReturn(Arrays.asList(recurso));
 
-    cargaDeHorasService.cargarHoras(tarea1Id, recursoId, cantidadHoras, fechaCargaStr);
+    cargaDeHorasService.cargarHoras(
+        new CargaDeHoras(tarea1Id, recursoId, cantidadHoras, fechaCargaStr));
 
-    cargaDeHorasService.cargarHoras(tarea2Id, recursoId, cantidadHoras, fechaCargaStr);
+    cargaDeHorasService.cargarHoras(
+        new CargaDeHoras(tarea2Id, recursoId, cantidadHoras, fechaCargaStr));
 
     verify(cargaDeHorasRepository, times(2)).save(any(CargaDeHoras.class));
   }
@@ -127,9 +133,11 @@ public class CargaDeHorasServiceTest {
     when(apiExternaService.getRecursos()).thenReturn(Arrays.asList(recurso));
 
     CargaDeHoras carga1 =
-        cargaDeHorasService.cargarHoras(tareaId, recursoId, cantidadHoras, fechaCargaStr);
+        cargaDeHorasService.cargarHoras(
+            new CargaDeHoras(tareaId, recursoId, cantidadHoras, fechaCargaStr));
     CargaDeHoras carga2 =
-        cargaDeHorasService.cargarHoras(tareaId, recursoId, cantidadHoras, fechaCargaStr);
+        cargaDeHorasService.cargarHoras(
+            new CargaDeHoras(tareaId, recursoId, cantidadHoras, fechaCargaStr));
 
     List<CargaDeHoras> cargasGuardadas = cargaDeHorasService.obtenerTodasLasCargasDeHoras();
 
@@ -152,7 +160,9 @@ public class CargaDeHorasServiceTest {
     Exception e =
         assertThrows(
             IllegalArgumentException.class,
-            () -> cargaDeHorasService.cargarHoras(tareaId, recursoId, 8.0, "19/11/2024"));
+            () ->
+                cargaDeHorasService.cargarHoras(
+                    new CargaDeHoras(tareaId, recursoId, 8.0, "19/11/2024")));
 
     assertEquals("No existe la tarea con ID: " + tareaId, e.getMessage());
 
@@ -173,7 +183,9 @@ public class CargaDeHorasServiceTest {
     Exception e =
         assertThrows(
             IllegalArgumentException.class,
-            () -> cargaDeHorasService.cargarHoras(tareaId, recursoId, 8.0, "19/11/2024"));
+            () ->
+                cargaDeHorasService.cargarHoras(
+                    new CargaDeHoras(tareaId, recursoId, 8.0, "19/11/2024")));
 
     assertEquals("No existe el recurso con ID: " + recursoId, e.getMessage());
 

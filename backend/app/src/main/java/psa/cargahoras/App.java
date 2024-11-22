@@ -1,6 +1,5 @@
 package psa.cargahoras;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,11 +10,19 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import psa.cargahoras.dto.ProyectoDTO;
+import psa.cargahoras.dto.RecursoDTO;
+import psa.cargahoras.dto.RolDTO;
+import psa.cargahoras.dto.TareaDTO;
 import psa.cargahoras.entity.CargaDeHoras;
+import psa.cargahoras.service.ApiExternaService;
 import psa.cargahoras.service.CargaDeHorasService;
 
 @SpringBootApplication
@@ -25,57 +32,140 @@ import psa.cargahoras.service.CargaDeHorasService;
 @ComponentScan(basePackages = "psa.cargahoras")
 public class App {
 
-  @Autowired private CargaDeHorasService cargaHorasService;
+  @Autowired private CargaDeHorasService cargaDeHorasService;
 
-  @GetMapping("/carga-horas")
-  public ResponseEntity<List<CargaDeHoras>> obtenerCargas() {
+  @Autowired private ApiExternaService apiExternaService;
+
+  @GetMapping("/carga-de-horas")
+  public ResponseEntity<List<CargaDeHoras>> obtenerCargasDeHoras() {
     try {
-      List<CargaDeHoras> cargas = cargaHorasService.obtenerTodasLasCargasDeHoras();
+      List<CargaDeHoras> cargas = cargaDeHorasService.obtenerTodasLasCargasDeHoras();
       return new ResponseEntity<>(cargas, HttpStatus.OK);
     } catch (Exception e) {
       return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  @PostMapping("/carga-horas")
-  public ResponseEntity<?> crearCargaHoras(@RequestBody Map<String, Object> request) {
+  @PostMapping("/carga-de-horas")
+  public ResponseEntity<?> cargarHoras(@RequestBody Map<String, Object> request) {
     try {
-      if (request.get("tareaId") == null) {
-        throw new IllegalArgumentException("El campo tareaId es requerido");
-      }
-      if (request.get("recursoId") == null) {
-        throw new IllegalArgumentException("El campo recursoId es requerido");
-      }
-      if (request.get("cantidadHoras") == null) {
-        throw new IllegalArgumentException("El campo cantidadHoras es requerido");
-      }
-      if (request.get("fechaCarga") == null) {
-        throw new IllegalArgumentException("El campo fechaCarga es requerido");
-      }
-
-      double cantidadHoras = Double.parseDouble(request.get("cantidadHoras").toString());
-      String fechaCarga = request.get("fechaCarga").toString();
-
-      CargaDeHoras nuevaCarga =
-          cargaHorasService.cargarHoras(
-              request.get("tareaId").toString(),
-              request.get("recursoId").toString(),
-              cantidadHoras,
-              fechaCarga);
-
-      Map<String, Object> response = new HashMap<>();
-      response.put("id", nuevaCarga.getId());
-      response.put("tareaId", nuevaCarga.getTareaId());
-      response.put("recursoId", nuevaCarga.getRecursoId());
-      response.put("cantidadHoras", nuevaCarga.getCantidadHoras());
-      response.put("fechaCarga", nuevaCarga.getFechaCarga());
-
-      return new ResponseEntity<>(response, HttpStatus.CREATED);
+      CargaDeHoras nuevaCarga = extrearCargaDeHoras(request);
+      cargaDeHorasService.cargarHoras(nuevaCarga);
+      return new ResponseEntity<>(nuevaCarga, HttpStatus.CREATED);
     } catch (IllegalArgumentException e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     } catch (Exception e) {
       return new ResponseEntity<>(
           "Error interno del servidor: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @PutMapping("/carga-de-horas")
+  public ResponseEntity<?> modificarCargaDeHoras(@RequestBody Map<String, Object> request) {
+    try {
+      CargaDeHoras cargaActualizada = extrearCargaDeHoras(request);
+      // TODO: Implementar la funcionalidad de actualizacion
+      //
+      // En caso de que el id sea invalido y no haya una carga con dicho
+      // id, retornar HttpStatus.NOT_FOUND.
+      //
+      // En caso de otro error en los parametros tirar
+      // HttpStatus.BAD_REQUEST.
+      //
+      return new ResponseEntity<>(cargaActualizada, HttpStatus.OK);
+    } catch (Exception e) {
+      return new ResponseEntity<>(
+          "Error interno del servidor: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @DeleteMapping("/carga-de-horas/{id}")
+  public ResponseEntity<?> eliminarCargaDeHoras(@PathVariable String cargaId) {
+    try {
+      // TODO: Implementar la funcionalidad de eliminacion, la logica de
+      // validacion se hace en el service directamente, en la request solo
+      // te pasan un id, si el id existe ya lo validas en el service.
+      //
+      // En caso de que el id sea invalido y no haya una carga con dicho
+      // id, retornar HttpStatus.NOT_FOUND.
+      //
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (Exception e) {
+      return new ResponseEntity<>(
+          "Error interno del servidor: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  private CargaDeHoras extrearCargaDeHoras(Map<String, Object> request) {
+    if (request.get("tareaId") == null) {
+      throw new IllegalArgumentException("El campo tareaId es requerido");
+    }
+    if (request.get("recursoId") == null) {
+      throw new IllegalArgumentException("El campo recursoId es requerido");
+    }
+    if (request.get("cantidadHoras") == null) {
+      throw new IllegalArgumentException("El campo cantidadHoras es requerido");
+    }
+    if (request.get("fechaCarga") == null) {
+      throw new IllegalArgumentException("El campo fechaCarga es requerido");
+    }
+
+    double cantidadHoras;
+
+    try {
+      cantidadHoras = Double.parseDouble(request.get("cantidadHoras").toString());
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("El campo cantidadHoras debe ser un número válido");
+    }
+
+    return new CargaDeHoras(
+        request.get("tareaId").toString(),
+        request.get("recursoId").toString(),
+        cantidadHoras,
+        request.get("fechaCarga").toString());
+  }
+
+  @GetMapping("/recursos")
+  public ResponseEntity<?> obtenerRecursosProxy() {
+    try {
+      List<RecursoDTO> recursos = apiExternaService.getRecursos();
+      return new ResponseEntity<>(recursos, HttpStatus.OK);
+    } catch (Exception e) {
+      return new ResponseEntity<>(
+          "Error al obtener recursos: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @GetMapping("/tareas")
+  public ResponseEntity<?> obtenerTareasProxy() {
+    try {
+      List<TareaDTO> tareas = apiExternaService.getTareas();
+      return new ResponseEntity<>(tareas, HttpStatus.OK);
+    } catch (Exception e) {
+      return new ResponseEntity<>(
+          "Error al obtener tareas: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @GetMapping("/roles")
+  public ResponseEntity<?> obtenerRolesProxy() {
+    try {
+      List<RolDTO> roles = apiExternaService.getRoles();
+      return new ResponseEntity<>(roles, HttpStatus.OK);
+    } catch (Exception e) {
+      return new ResponseEntity<>(
+          "Error al obtener roles: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @GetMapping("/proyectos")
+  public ResponseEntity<?> obtenerProyectosProxy() {
+    try {
+      List<ProyectoDTO> proyectos = apiExternaService.getProyectos();
+      return new ResponseEntity<>(proyectos, HttpStatus.OK);
+    } catch (Exception e) {
+      return new ResponseEntity<>(
+          "Error al obtener proyectos: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

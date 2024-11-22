@@ -72,7 +72,7 @@ public class CargaDeHorasSteps {
         resultadoOperacion.ejecutar(
             () ->
                 cargaDeHorasService.cargarHoras(
-                    tarea.getId(), recurso.getId(), cantidadHoras, fechaDateStr));
+                    new CargaDeHoras(tarea.getId(), recurso.getId(), cantidadHoras, fechaDateStr)));
   }
 
   @Y("la carga de horas debe ser registrada")
