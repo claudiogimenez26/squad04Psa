@@ -1,8 +1,11 @@
-import Image from "next/image";
+import type { Proyecto, Recurso } from "@/app/lib/types";
 
 export default async function Home() {
-  const data = await fetch(`${process.env.BACKEND_URL}/carga-horas`);
-  const cargasHoras = await data.json();
+  const dataProyectos = await fetch("http://localhost:8080/proyectos");
+  const proyectos: Proyecto[] = await dataProyectos.json();
 
-  return <div>Hello World</div>;
+  const dataRecursos = await fetch("http://localhost:8080/proyectos");
+  const recursos: Recurso[] = await dataRecursos.json();
+
+  return <div>Hola mundo</div>;
 }
