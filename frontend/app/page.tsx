@@ -1,11 +1,9 @@
-import type { Proyecto, Recurso } from "@/app/lib/types";
+import SelectRecurso from "@/_componentes/SelectRecurso";
+import { Recurso } from "@/_lib/tipos";
 
-export default async function Home() {
-  const dataProyectos = await fetch("http://localhost:8080/proyectos");
-  const proyectos: Proyecto[] = await dataProyectos.json();
+export default async function () {
+  const res = await fetch(`${process.env.BACKEND_URL}/recursos`);
+  const recursos: Recurso[] = await res.json();
 
-  const dataRecursos = await fetch("http://localhost:8080/proyectos");
-  const recursos: Recurso[] = await dataRecursos.json();
-
-  return <div>Hola mundo</div>;
+  return <SelectRecurso recursos={recursos} />;
 }

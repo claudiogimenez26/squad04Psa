@@ -1,48 +1,50 @@
 import "./globals.css";
 
-import { Inter } from "next/font/google";
+import RecursoContextProvider from "@/_context/recursoContext";
+import { Recurso } from "@/_lib/tipos";
 import {
   Navbar,
   NavbarBrand,
   NavbarCollapse,
-  NavbarLink,
+  NavbarLink
 } from "flowbite-react";
-import { Recurso } from "@/app/lib/types";
-import { LoginContextProvider } from "@/app/context/LoginContext";
-import PerfilUsuario from "./PerfilUsuario";
+import { Inter } from "next/font/google";
+import RecursoActual from "./_componentes/RecursoActual";
 
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-inter"
 });
 
 export default async function RootLayout({
-  children,
+  children
 }: {
   children: React.ReactNode;
 }) {
-  const data = await fetch("http://localhost:8080/recursos");
-  const recursos: Recurso[] = await data.json();
+  const res = await fetch(`${process.env.BACKEND_URL}/recursos`);
+  const recursos: Recurso[] = await res.json();
 
   return (
     <html lang="en">
-      <body className={`${inter.variable} antialiased font-sans`}>
-        <LoginContextProvider recurso={recursos[0]}>
+      <body
+        className={`${inter.variable} antialiased font-sans min-h-dvh flex flex-col`}
+      >
+        <RecursoContextProvider recursos={recursos}>
           <Navbar className="border-b">
             <NavbarBrand>
               <span className="self-center text-xl font-semibold">PSA</span>
             </NavbarBrand>
             <NavbarCollapse>
-              <NavbarLink href="/">Consultar cargas</NavbarLink>
-              <NavbarLink href="/carga-de-horas">Cargar horas</NavbarLink>
-              <NavbarLink href="/login">
-                <PerfilUsuario />
+              <NavbarLink href="/consultar-cargas">Consultar cargas</NavbarLink>
+              <NavbarLink href="/cargar-horas">Cargar horas</NavbarLink>
+              <NavbarLink href="/">
+                <RecursoActual />
               </NavbarLink>
             </NavbarCollapse>
           </Navbar>
-          <main className="container mx-auto my-6">{children}</main>
-        </LoginContextProvider>
+          <main className="flex-1 flex container mx-auto my-6">{children}</main>
+        </RecursoContextProvider>
       </body>
     </html>
   );
