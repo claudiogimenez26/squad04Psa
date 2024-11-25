@@ -5,6 +5,7 @@ import { cargarHoras } from "@/_lib/actions";
 import { Proyecto, Tarea } from "@/_lib/tipos";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  Alert,
   Button,
   Datepicker,
   Label,
@@ -104,6 +105,11 @@ export default function FormularioCargaDeHoras({
     })();
   }
 
+  const [mensaje, setMensaje] = useState<{
+    tipo: "success" | "failure";
+    text: string;
+  } | null>(null);
+
   async function handleEnviarFormulario() {
     const data = getValues();
     const formData = new FormData();
@@ -120,7 +126,20 @@ export default function FormularioCargaDeHoras({
       })
     );
 
-    await cargarHoras(formData);
+    const resultado = await cargarHoras(formData);
+
+    if (resultado.success) {
+      setMensaje({
+        tipo: "success",
+        text: "Las horas se cargaron correctamente"
+      });
+    } else {
+      setMensaje({
+        tipo: "failure",
+        text: resultado.error || "Error al cargar las horas"
+      });
+    }
+
     setModalAbierto(false);
   }
 
@@ -128,6 +147,12 @@ export default function FormularioCargaDeHoras({
 
   return (
     <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+      {mensaje && (
+        <Alert color={mensaje.tipo} onDismiss={() => setMensaje(null)}>
+          <span className="font-medium">{mensaje.text}</span>
+        </Alert>
+      )}
+
       <div className="grid gap-4 grid-cols-4">
         <InputFormulario
           nombreInput="proyectoId"
