@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 "use client";
 
 import { Datepicker } from "flowbite-react";
@@ -28,8 +27,4 @@ export default function () {
       />
     </div>
   );
-=======
-export default function () {
-  return <div>Testing</div>;
->>>>>>> 0aca13b (wip: modularización inicial del formulario de carga de horas)
 }
