@@ -110,6 +110,8 @@ export default function FormularioCargaDeHoras({
     text: string;
   } | null>(null);
 
+  const [esperandoRespuesta, setEsperandoRespuesta] = useState(false);
+
   async function handleEnviarFormulario() {
     const data = getValues();
     const formData = new FormData();
@@ -126,7 +128,9 @@ export default function FormularioCargaDeHoras({
       })
     );
 
+    setEsperandoRespuesta(true);
     const resultado = await cargarHoras(formData);
+    setEsperandoRespuesta(false);
 
     if (resultado.success) {
       setMensaje({
@@ -235,8 +239,17 @@ export default function FormularioCargaDeHoras({
           />
         </Modal.Body>
         <Modal.Footer className="justify-end">
-          <Button onClick={handleEnviarFormulario}>Confirmar</Button>
-          <Button color="gray" onClick={() => setModalAbierto(false)}>
+          <Button
+            onClick={handleEnviarFormulario}
+            isProcessing={esperandoRespuesta}
+          >
+            Confirmar
+          </Button>
+          <Button
+            color="gray"
+            onClick={() => setModalAbierto(false)}
+            disabled={esperandoRespuesta}
+          >
             Cancelar
           </Button>
         </Modal.Footer>
