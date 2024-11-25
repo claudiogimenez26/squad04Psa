@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import psa.cargahoras.dto.CargaDeHorasPorRecursoDTO;
 import psa.cargahoras.dto.ProyectoDTO;
 import psa.cargahoras.dto.RecursoDTO;
 import psa.cargahoras.dto.RolDTO;
@@ -49,7 +50,7 @@ public class App {
   @PostMapping("/carga-de-horas")
   public ResponseEntity<?> cargarHoras(@RequestBody Map<String, Object> request) {
     try {
-      CargaDeHoras nuevaCarga = extrearCargaDeHoras(request);
+      CargaDeHoras nuevaCarga = extraerCargaDeHoras(request);
       cargaDeHorasService.cargarHoras(nuevaCarga);
       return new ResponseEntity<>(nuevaCarga, HttpStatus.CREATED);
     } catch (IllegalArgumentException e) {
@@ -60,10 +61,23 @@ public class App {
     }
   }
 
+  @GetMapping("/carga-de-horas/{recursoId}")
+  public ResponseEntity<?> obtenerCargasDeHorasPorRecurso(@PathVariable String recursoId) {
+    try {
+      List<CargaDeHorasPorRecursoDTO> recursosPorProyectos =
+          cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId);
+      return new ResponseEntity<>(recursosPorProyectos, HttpStatus.OK);
+    } catch (Exception e) {
+      return new ResponseEntity<>(
+          "Error al obtener recursos con proyectos: " + e.getMessage(),
+          HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   @PutMapping("/carga-de-horas")
   public ResponseEntity<?> modificarCargaDeHoras(@RequestBody Map<String, Object> request) {
     try {
-      CargaDeHoras cargaActualizada = extrearCargaDeHoras(request);
+      CargaDeHoras cargaActualizada = extraerCargaDeHoras(request);
       // TODO: Implementar la funcionalidad de actualizacion
       //
       // En caso de que el id sea invalido y no haya una carga con dicho
@@ -79,7 +93,7 @@ public class App {
     }
   }
 
-  @DeleteMapping("/carga-de-horas/{id}")
+  @DeleteMapping("/carga-de-horas/{cargaId}")
   public ResponseEntity<?> eliminarCargaDeHoras(@PathVariable String cargaId) {
     try {
       // TODO: Implementar la funcionalidad de eliminacion, la logica de
@@ -96,7 +110,7 @@ public class App {
     }
   }
 
-  private CargaDeHoras extrearCargaDeHoras(Map<String, Object> request) {
+  private CargaDeHoras extraerCargaDeHoras(Map<String, Object> request) {
     if (request.get("tareaId") == null) {
       throw new IllegalArgumentException("El campo tareaId es requerido");
     }
