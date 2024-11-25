@@ -6,73 +6,57 @@ import static org.mockito.Mockito.*;
 
 import io.cucumber.java.Before;
 import io.cucumber.java.es.Cuando;
-import io.cucumber.java.es.Dado;
 import io.cucumber.java.es.Entonces;
 import io.cucumber.java.es.Y;
-import java.util.Arrays;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import psa.cargahoras.dto.RecursoDTO;
-import psa.cargahoras.dto.TareaDTO;
 import psa.cargahoras.entity.CargaDeHoras;
 import psa.cargahoras.repository.CargaDeHorasRepository;
-import psa.cargahoras.service.ApiExternaService;
 import psa.cargahoras.service.CargaDeHorasService;
 
 public class CargaDeHorasSteps {
 
-  private final ResultadoOperacionCommonSteps resultadoOperacion;
-
-  private CargaDeHoras cargaDeHoras;
-  private TareaDTO tarea;
-  private RecursoDTO recurso;
+  private final TestContext testContext;
+  private final RecursoCommonSteps recursoCommonSteps;
+  private final TareaCommonSteps tareaCommonSteps;
+  private final ResultadoOperacionCommonSteps resultadoOperacionCommonSteps;
 
   @Mock private CargaDeHorasRepository cargaDeHorasRepository;
 
-  @Mock private ApiExternaService apiExternaService;
-
+  private CargaDeHoras cargaDeHoras;
   private CargaDeHorasService cargaDeHorasService;
 
-  public CargaDeHorasSteps(ResultadoOperacionCommonSteps resultadoOperacion) {
-    this.resultadoOperacion = resultadoOperacion;
+  public CargaDeHorasSteps(
+      TestContext testContext,
+      RecursoCommonSteps cargaDeHorasSteps,
+      TareaCommonSteps tareaCommonSteps,
+      ResultadoOperacionCommonSteps resultadoOperacion) {
+    this.testContext = testContext;
+    this.recursoCommonSteps = cargaDeHorasSteps;
+    this.tareaCommonSteps = tareaCommonSteps;
+    this.resultadoOperacionCommonSteps = resultadoOperacion;
   }
 
   @Before
   public void resetear() {
     MockitoAnnotations.openMocks(this);
 
-    cargaDeHorasService = new CargaDeHorasService(cargaDeHorasRepository, apiExternaService);
-
     cargaDeHoras = null;
-    tarea = null;
-    recurso = null;
-  }
-
-  @Dado("un recurso con id {string}")
-  public void dadoUnRecursoConId(String recursoId) {
-    recurso = mock(RecursoDTO.class);
-
-    when(recurso.getId()).thenReturn(recursoId);
-
-    when(apiExternaService.getRecursos()).thenReturn(Arrays.asList(recurso));
-  }
-
-  @Y("una tarea con id {string}")
-  public void dadaUnaTareaConId(String tareaId) {
-    tarea = mock(TareaDTO.class);
-
-    when(tarea.getId()).thenReturn(tareaId);
-
-    when(apiExternaService.getTareas()).thenReturn(Arrays.asList(tarea));
+    cargaDeHorasService =
+        new CargaDeHorasService(cargaDeHorasRepository, testContext.getApiExternaService());
   }
 
   @Cuando("el recurso realiza una carga de {double} horas a la tarea en la fecha {string}")
   public void cuandoElRecursoCargaHorasATareaEnFecha(double cantidadHoras, String fechaDateStr) {
     cargaDeHoras =
-        resultadoOperacion.ejecutar(
+        resultadoOperacionCommonSteps.ejecutar(
             () ->
                 cargaDeHorasService.cargarHoras(
-                    new CargaDeHoras(tarea.getId(), recurso.getId(), cantidadHoras, fechaDateStr)));
+                    new CargaDeHoras(
+                        tareaCommonSteps.getTarea().getId(),
+                        recursoCommonSteps.getRecurso().getId(),
+                        cantidadHoras,
+                        fechaDateStr)));
   }
 
   @Y("la carga de horas debe ser registrada")
@@ -115,24 +99,6 @@ public class CargaDeHorasSteps {
 
   @Entonces("el mensaje de error debe ser {string}")
   public void verificarMensajeDeError(String mensajeEsperado) {
-    assertEquals(mensajeEsperado, resultadoOperacion.getExcepcion().getMessage());
-  }
-
-  @Dado("un recurso con id inexistente {string}")
-  public void dadoUnRecursoConIdInexistente(String recursoId) {
-    recurso = mock(RecursoDTO.class);
-
-    when(recurso.getId()).thenReturn(recursoId);
-
-    when(apiExternaService.getRecursos()).thenReturn(Arrays.asList());
-  }
-
-  @Y("una tarea con id inexistente {string}")
-  public void dadoUnaTareaConIdInexistente(String tareaId) {
-    tarea = mock(TareaDTO.class);
-
-    when(tarea.getId()).thenReturn(tareaId);
-
-    when(apiExternaService.getTareas()).thenReturn(Arrays.asList());
+    assertEquals(mensajeEsperado, resultadoOperacionCommonSteps.getExcepcion().getMessage());
   }
 }

@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import psa.cargahoras.dto.CargaDeHorasPorRecursoDTO;
 import psa.cargahoras.dto.ProyectoDTO;
 import psa.cargahoras.dto.RecursoDTO;
 import psa.cargahoras.dto.TareaDTO;
@@ -223,7 +224,7 @@ public class CargaDeHorasServiceTest {
     when(cargaDeHorasRepository.findAll()).thenReturn(Arrays.asList(carga1, carga2));
 
     List<CargaDeHoras> cargasProyecto1 =
-        cargaDeHorasService.obtenerTodasLasCargasDeHorasPorProyecto(proyecto1Id);
+        cargaDeHorasService.obtenerCargasDeHorasPorProyecto(proyecto1Id);
 
     assertEquals(1, cargasProyecto1.size());
     assertEquals(tarea1Id, cargasProyecto1.get(0).getTareaId());
@@ -236,9 +237,92 @@ public class CargaDeHorasServiceTest {
     Exception e =
         assertThrows(
             IllegalArgumentException.class,
-            () ->
-                cargaDeHorasService.obtenerTodasLasCargasDeHorasPorProyecto(proyectoInexistenteId));
+            () -> cargaDeHorasService.obtenerCargasDeHorasPorProyecto(proyectoInexistenteId));
 
     assertEquals("No existe el proyecto con ID: " + proyectoInexistenteId, e.getMessage());
+  }
+
+  @Test
+  public void obtenerCargasDeHorasPorRecurso() {
+    String recursoId = UUID.randomUUID().toString();
+    String tarea1Id = UUID.randomUUID().toString();
+    String tarea2Id = UUID.randomUUID().toString();
+    String proyecto1Id = UUID.randomUUID().toString();
+    String proyecto2Id = UUID.randomUUID().toString();
+
+    RecursoDTO recurso = new RecursoDTO();
+    recurso.setId(recursoId);
+
+    ProyectoDTO proyecto1 = new ProyectoDTO();
+    proyecto1.setId(proyecto1Id);
+    proyecto1.setNombre("Proyecto 1");
+
+    ProyectoDTO proyecto2 = new ProyectoDTO();
+    proyecto2.setId(proyecto2Id);
+    proyecto2.setNombre("Proyecto 2");
+
+    TareaDTO tarea1 = new TareaDTO();
+    tarea1.setId(tarea1Id);
+    tarea1.setProyectoId(proyecto1Id);
+
+    TareaDTO tarea2 = new TareaDTO();
+    tarea2.setId(tarea2Id);
+    tarea2.setProyectoId(proyecto2Id);
+
+    CargaDeHoras carga1 = new CargaDeHoras(tarea1Id, recursoId, 8.0, "19/11/2024");
+    CargaDeHoras carga2 = new CargaDeHoras(tarea2Id, recursoId, 4.0, "20/11/2024");
+
+    when(apiExternaService.getRecursos()).thenReturn(Arrays.asList(recurso));
+    when(apiExternaService.getTareas()).thenReturn(Arrays.asList(tarea1, tarea2));
+    when(apiExternaService.getProyectos()).thenReturn(Arrays.asList(proyecto1, proyecto2));
+    when(cargaDeHorasRepository.findAll()).thenReturn(Arrays.asList(carga1, carga2));
+
+    List<CargaDeHorasPorRecursoDTO> resultado =
+        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId);
+
+    assertEquals(2, resultado.size());
+
+    assertEquals(carga1.getId(), resultado.get(0).getId());
+    assertEquals(tarea1Id, resultado.get(0).getTareaId());
+    assertEquals(carga1.getCantidadHoras(), resultado.get(0).getCantidadHoras(), 0.01);
+    assertEquals("19/11/2024", resultado.get(0).getFechaCarga());
+    assertEquals("Proyecto 1", resultado.get(0).getNombreProyecto());
+
+    assertEquals(carga2.getId(), resultado.get(1).getId());
+    assertEquals(tarea2Id, resultado.get(1).getTareaId());
+    assertEquals(carga2.getCantidadHoras(), resultado.get(1).getCantidadHoras(), 0.01);
+    assertEquals("20/11/2024", resultado.get(1).getFechaCarga());
+    assertEquals("Proyecto 2", resultado.get(1).getNombreProyecto());
+  }
+
+  @Test
+  public void obtenerCargasDeHorasParaRecursoSinCargas() {
+    String recursoId = UUID.randomUUID().toString();
+
+    RecursoDTO recurso = new RecursoDTO();
+    recurso.setId(recursoId);
+
+    when(apiExternaService.getRecursos()).thenReturn(Arrays.asList(recurso));
+    when(cargaDeHorasRepository.findAll()).thenReturn(Arrays.asList());
+
+    List<CargaDeHorasPorRecursoDTO> resultado =
+        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId);
+
+    assertNotNull(resultado);
+    assertEquals(0, resultado.size());
+  }
+
+  @Test
+  public void obtenerCargasDeHorasPorRecursoInexistenteTiraExcepcion() {
+    String recursoInexistenteId = UUID.randomUUID().toString();
+
+    when(apiExternaService.getRecursos()).thenReturn(Arrays.asList());
+
+    Exception e =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoInexistenteId));
+
+    assertEquals("No existe el recurso con ID: " + recursoInexistenteId, e.getMessage());
   }
 }
