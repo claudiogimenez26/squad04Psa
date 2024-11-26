@@ -1,7 +1,13 @@
 import { CargaDeHoras } from "@/_lib/tipos";
 
-type CargaDeHorasConFecha = Omit<CargaDeHoras, "fechaCarga"> & {
-  fechaCarga: Date;
+const INDICES_DIAS = {
+  Domingo: 0,
+  Lunes: 1,
+  Martes: 2,
+  Miércoles: 3,
+  Jueves: 4,
+  Viernes: 5,
+  Sábado: 6
 };
 
 export default async function ({
@@ -16,49 +22,73 @@ export default async function ({
   );
   const cargasDeHoras: CargaDeHoras[] = await data.json();
 
-  if (cargasDeHoras.length === 0) {
-    return <div>Recurso no tiene cargas de horas</div>;
-  }
-
-  const cargasDeHorasConFechas: CargaDeHorasConFecha[] = cargasDeHoras.map(
-    (c) => {
-      const [dia, mes, anio] = c.fechaCarga.split("/");
-      const fechaCarga = new Date(Number(anio), Number(mes), Number(dia));
-      return { ...c, fechaCarga };
-    }
-  );
-
-  const cargasDeHorasLunes: CargaDeHorasConFecha[] =
-    cargasDeHorasConFechas.filter((c) => new Date(c.fechaCarga).getDay() !== 1);
+  const cargasDeHorasPorDia = cargasDeHoras.map((c) => {
+    const [dia, mes, anio] = c.fechaCarga.split("/");
+    const fechaCarga = new Date(Number(anio), Number(mes) - 1, Number(dia));
+    return { ...c, fechaCarga };
+  });
 
   return (
-    <div className="grid grid-cols-7">
-      <div>
-        <div className="p-2">Domingo</div>
-      </div>
-      <div className="flex flex-col gap-4 divide-y-2">
-        <div className="p-2">Lunes</div>
-        {cargasDeHorasLunes.map((c) => (
-          <div key={c.id}>
-            {c.nombreProyecto} - {c.cantidadHoras} horas
-          </div>
-        ))}
-      </div>
-      <div>
-        <div className="p-2">Martes</div>
-      </div>
-      <div>
-        <div className="p-2">Miércoles</div>
-      </div>
-      <div>
-        <div className="p-2">Jueves</div>
-      </div>
-      <div>
-        <div className="p-2">Viernes</div>
-      </div>
-      <div>
-        <div className="p-2">Sábado</div>
-      </div>
+    <table className="border border-gray-300">
+      <thead className="bg-gray-50 border-b border-gray-300">
+        <tr className="grid grid-cols-7">
+          {Object.keys(INDICES_DIAS).map((d) => (
+            <td key={d} className="p-2 text-center">
+              {d}
+            </td>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        <tr className="grid grid-cols-7">
+          {Object.values(INDICES_DIAS).map((i) => (
+            <td key={i}>
+              <ColumnaCargasDeHoraPorDia
+                cargasDeHoras={cargasDeHorasPorDia.filter(
+                  (c) => c.fechaCarga.getDay() === i
+                )}
+              />
+            </td>
+          ))}
+        </tr>
+      </tbody>
+    </table>
+  );
+}
+
+function ColumnaCargasDeHoraPorDia({
+  cargasDeHoras
+}: {
+  cargasDeHoras: (Omit<CargaDeHoras, "fechaCarga"> & {
+    fechaCarga: Date;
+  })[];
+}) {
+  return (
+    <div className="flex flex-col gap-2 py-2 h-[600px]">
+      {cargasDeHoras.map((c) => (
+        <div key={c.id}>
+          <BloqueCargaDeHoras {...c} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function BloqueCargaDeHoras({
+  nombreProyecto,
+  cantidadHoras
+}: {
+  nombreProyecto: string;
+  cantidadHoras: number;
+}) {
+  const altura = (cantidadHoras / 24) * 576;
+
+  return (
+    <div
+      className="border border-emerald-500 bg-emerald-200 p-2 overflow-y-scroll"
+      style={{ height: `${altura}px`, minHeight: "4.5rem" }}
+    >
+      {nombreProyecto} - {cantidadHoras} horas
     </div>
   );
 }

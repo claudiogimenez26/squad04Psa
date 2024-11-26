@@ -1,4 +1,5 @@
-import Formulario from "./Formulario";
+import SelectorFecha from "./SelectorFecha";
+import SelectorRecurso from "./SelectorRecurso";
 
 export const experimental_ppr = true;
 
@@ -7,9 +8,15 @@ export default async function ({ children }: { children: React.ReactNode }) {
   const recursos = await data.json();
 
   return (
-    <>
-      <Formulario recursos={recursos} />
+    <div className="space-y-6">
+      <h1 className="text-4xl font-bold">Consultar cargas por recurso</h1>
+
+      <div className="space-y-4">
+        <SelectorRecurso recursos={recursos} />
+        <SelectorFecha />
+      </div>
+
       {children}
-    </>
+    </div>
   );
 }
