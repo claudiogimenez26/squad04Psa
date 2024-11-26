@@ -1,5 +1,8 @@
 package psa.cargahoras.service;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import psa.cargahoras.dto.CargaDeHorasPorRecursoDTO;
@@ -60,7 +63,8 @@ public class CargaDeHorasService {
     }
 
     public List<CargaDeHorasPorRecursoDTO> obtenerCargasDeHorasPorRecurso(
-        String recursoId
+        String recursoId,
+        LocalDate fechaBusqueda
     ) {
         boolean existeRecurso = apiExternaService
             .getRecursos()
@@ -73,10 +77,25 @@ public class CargaDeHorasService {
             );
         }
 
+        LocalDate inicioSemana = fechaBusqueda.with(
+            TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)
+        );
+        LocalDate finSemana = fechaBusqueda.with(
+            TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)
+        );
+
         List<CargaDeHoras> cargas = cargaHorasRepository
             .findAll()
             .stream()
             .filter(carga -> carga.getRecursoId().equals(recursoId))
+            .filter(carga -> {
+                return (
+                    carga.getFechaCarga().isEqual(inicioSemana) ||
+                    carga.getFechaCarga().isEqual(finSemana) ||
+                    (carga.getFechaCarga().isAfter(inicioSemana) &&
+                        carga.getFechaCarga().isBefore(finSemana))
+                );
+            })
             .toList();
 
         List<TareaDTO> tareas = apiExternaService.getTareas();
@@ -85,6 +104,13 @@ public class CargaDeHorasService {
         return cargas
             .stream()
             .map(carga -> {
+                String tareaNombre = tareas
+                    .stream()
+                    .filter(t -> t.getId().equals(carga.getTareaId()))
+                    .findFirst()
+                    .map(TareaDTO::getNombre)
+                    .orElse(null);
+
                 String proyectoId = tareas
                     .stream()
                     .filter(t -> t.getId().equals(carga.getTareaId()))
@@ -102,6 +128,7 @@ public class CargaDeHorasService {
                 return new CargaDeHorasPorRecursoDTO(
                     carga.getId(),
                     carga.getTareaId(),
+                    tareaNombre,
                     carga.getCantidadHoras(),
                     carga.getFechaCarga(),
                     nombreProyecto
