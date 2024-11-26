@@ -1,5 +1,7 @@
 package psa.cargahoras;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -79,8 +81,12 @@ public class App {
             LocalDate fechaBusqueda = null;
 
             if (fecha != null) {
+                String decodedFecha = URLDecoder.decode(
+                    fecha,
+                    StandardCharsets.UTF_8.toString()
+                );
                 fechaBusqueda = LocalDate.from(
-                    CargaDeHoras.formatterFecha.parse(fecha)
+                    CargaDeHoras.formatterFecha.parse(decodedFecha)
                 );
             }
 
