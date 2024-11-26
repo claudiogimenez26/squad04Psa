@@ -13,38 +13,40 @@ import java.util.List;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import psa.cargahoras.dto.ProyectoDTO;
-import psa.cargahoras.dto.TareaDTO;
 import psa.cargahoras.entity.CargaDeHoras;
 import psa.cargahoras.repository.CargaDeHorasRepository;
-import psa.cargahoras.service.ApiExternaService;
 import psa.cargahoras.service.CargaDeHorasService;
 
-public class ConsultaCargasDeHorasProyectoSteps {
+public class ConsultaCargasDeHorasPorProyectoSteps {
 
-  private final ResultadoOperacionCommonSteps resultadoOperacion;
-
-  private ProyectoDTO proyecto;
-  private TareaDTO tarea;
-  private List<CargaDeHoras> cargasDeHorasActuales;
-  private List<CargaDeHoras> cargasDeHorasFinales;
+  private final TestContext testContext;
+  private final TareaCommonSteps tareaCommonSteps;
+  private final ResultadoOperacionCommonSteps resultadoOperacionCommonSteps;
 
   @Mock private CargaDeHorasRepository cargaDeHorasRepository;
 
-  @Mock private ApiExternaService apiExternaService;
+  private ProyectoDTO proyecto;
+  private List<CargaDeHoras> cargasDeHorasIniciales;
+  private List<CargaDeHoras> cargasDeHorasFinales;
 
   private CargaDeHorasService cargaDeHorasService;
 
-  public ConsultaCargasDeHorasProyectoSteps(ResultadoOperacionCommonSteps resultadoOperacion) {
-    this.resultadoOperacion = resultadoOperacion;
+  public ConsultaCargasDeHorasPorProyectoSteps(
+      TestContext testContext,
+      TareaCommonSteps tareaCommonSteps,
+      ResultadoOperacionCommonSteps resultadoOperacionCommonSteps) {
+    this.testContext = testContext;
+    this.tareaCommonSteps = tareaCommonSteps;
+    this.resultadoOperacionCommonSteps = resultadoOperacionCommonSteps;
   }
 
   @Before
   public void resetear() {
     MockitoAnnotations.openMocks(this);
 
-    cargaDeHorasService = new CargaDeHorasService(cargaDeHorasRepository, apiExternaService);
-
-    cargasDeHorasActuales = new ArrayList<>();
+    cargasDeHorasIniciales = new ArrayList<>();
+    cargaDeHorasService =
+        new CargaDeHorasService(cargaDeHorasRepository, testContext.getApiExternaService());
   }
 
   @Dado("un proyecto con id {string}")
@@ -54,17 +56,7 @@ public class ConsultaCargasDeHorasProyectoSteps {
 
     when(proyecto.getId()).thenReturn(proyectoId);
 
-    when(apiExternaService.getProyectos()).thenReturn(Arrays.asList(proyecto));
-  }
-
-  @Y("una tarea con id {string}, con proyecto con id {string}")
-  public void dadaUnaTareaConProyecto(String tareaId, String proyectoId) {
-    tarea = mock(TareaDTO.class);
-
-    when(tarea.getId()).thenReturn(tareaId);
-    when(tarea.getProyectoId()).thenReturn(proyectoId);
-
-    when(apiExternaService.getTareas()).thenReturn(Arrays.asList(tarea));
+    when(testContext.getApiExternaService().getProyectos()).thenReturn(Arrays.asList(proyecto));
   }
 
   @Y("una carga de horas con id {string}, con tarea con id {string}")
@@ -74,15 +66,15 @@ public class ConsultaCargasDeHorasProyectoSteps {
     when(cargaDeHoras.getId()).thenReturn(cargaDeHorasId);
     when(cargaDeHoras.getTareaId()).thenReturn(tareaId);
 
-    cargasDeHorasActuales.add(cargaDeHoras);
-    when(cargaDeHorasRepository.findAll()).thenReturn(cargasDeHorasActuales);
+    cargasDeHorasIniciales.add(cargaDeHoras);
+    when(cargaDeHorasRepository.findAll()).thenReturn(cargasDeHorasIniciales);
   }
 
   @Cuando("consulto las cargas de horas del proyecto")
   public void consultarCargasDeHorasDelProyecto() {
     cargasDeHorasFinales =
-        resultadoOperacion.ejecutar(
-            () -> cargaDeHorasService.obtenerTodasLasCargasDeHorasPorProyecto(proyecto.getId()));
+        resultadoOperacionCommonSteps.ejecutar(
+            () -> cargaDeHorasService.obtenerCargasDeHorasPorProyecto(proyecto.getId()));
   }
 
   @Y("la cantidad de cargas de horas del proyecto debe ser {int}")
@@ -104,6 +96,6 @@ public class ConsultaCargasDeHorasProyectoSteps {
 
     when(proyecto.getId()).thenReturn(proyectoId);
 
-    when(apiExternaService.getProyectos()).thenReturn(Arrays.asList());
+    when(testContext.getApiExternaService().getProyectos()).thenReturn(Arrays.asList());
   }
 }

@@ -1,8 +1,10 @@
-import Image from "next/image";
+import SelectRecurso from "@/_componentes/SelectRecurso";
 
-export default async function Home() {
-  const data = await fetch(`${process.env.BACKEND_URL}/carga-horas`);
-  const cargasHoras = await data.json();
-
-  return <div>Hello World</div>;
+export default async function () {
+  return (
+    <div className="flex-1 space-y-6">
+      <h1 className="text-4xl font-bold">Cambiar recurso</h1>
+      <SelectRecurso />
+    </div>
+  );
 }
