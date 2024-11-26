@@ -91,10 +91,10 @@ public class CargaDeHorasService {
 
         if (fechaBusqueda != null) {
             LocalDate inicioSemana = fechaBusqueda.with(
-                TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)
+                TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)
             );
             LocalDate finSemana = fechaBusqueda.with(
-                TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)
+                TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY)
             );
 
             cargasDeRecurso = cargasDeRecurso.filter(carga -> {

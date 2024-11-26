@@ -1,3 +1,4 @@
+import { desencodearFecha } from "@/_lib/fecha";
 import { CargaDeHoras } from "@/_lib/tipos";
 
 const INDICES_DIAS = {
@@ -18,21 +19,19 @@ export default async function ({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const recursoId = (await params).recursoId;
-  let fecha =
-    (await searchParams)["fecha"] || new Date().toLocaleDateString("es-AR");
+  let fecha = (await searchParams)["fecha"];
 
-  if (typeof fecha != "string") {
+  if (fecha && typeof fecha != "string") {
     fecha = fecha[0];
   }
 
-  const url = `${process.env.BACKEND_URL}/carga-de-horas/${recursoId}?fecha=${encodeURIComponent(fecha)}`;
+  const url = `${process.env.BACKEND_URL}/carga-de-horas/${recursoId}?fecha=${fecha}`;
 
   const res = await fetch(url);
   const cargas: CargaDeHoras[] = await res.json();
 
   const cargasPorDia = cargas.map((c) => {
-    const [dia, mes, anio] = c.fechaCarga.split("/");
-    const fechaCarga = new Date(Number(anio), Number(mes) - 1, Number(dia));
+    const fechaCarga = desencodearFecha(c.fechaCarga);
     return { ...c, fechaCarga };
   });
 
