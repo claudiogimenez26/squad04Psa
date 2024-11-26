@@ -21,5 +21,17 @@ import psa.cargahoras.service.CargaDeHorasService;
 
 
 public class EliminarCargaDeHorasSteps {
+
+    @Cuando("elimino la carga de horas")
+    public void elimino_la_carga_de_horas() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new io.cucumber.java.PendingException();
+    }
+    @Entonces("la tarea no debe tener horas cargadas")
+    public void la_tarea_no_debe_tener_horas_cargadas() {
+        // Write code here that turns the phrase above into concrete actions
+        throw new io.cucumber.java.PendingException();
+    }
+
     
 }
