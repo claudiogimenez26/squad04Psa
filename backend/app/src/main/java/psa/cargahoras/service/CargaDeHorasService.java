@@ -4,9 +4,14 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 import psa.cargahoras.dto.CargaDeHorasPorRecursoDTO;
 import psa.cargahoras.dto.ProyectoDTO;
+import psa.cargahoras.dto.RecursoDTO;
 import psa.cargahoras.dto.TareaDTO;
 import psa.cargahoras.entity.CargaDeHoras;
 import psa.cargahoras.repository.CargaDeHorasRepository;
@@ -47,17 +52,18 @@ public class CargaDeHorasService {
             .getTareas()
             .stream()
             .filter(tarea -> tarea.getProyectoId().equals(proyectoId))
-            .toList();
+            .collect(Collectors.toList());
+
+        Set<String> tareaIdsDelProyecto = tareasDelProyecto
+            .stream()
+            .map(TareaDTO::getId)
+            .collect(Collectors.toSet());
 
         List<CargaDeHoras> cargasDeHoras = cargaHorasRepository
             .findAll()
             .stream()
-            .filter(carga ->
-                tareasDelProyecto
-                    .stream()
-                    .anyMatch(tarea -> tarea.getId().equals(carga.getTareaId()))
-            )
-            .toList();
+            .filter(carga -> tareaIdsDelProyecto.contains(carga.getTareaId()))
+            .collect(Collectors.toList());
 
         return cargasDeHoras;
     }
@@ -66,64 +72,67 @@ public class CargaDeHorasService {
         String recursoId,
         LocalDate fechaBusqueda
     ) {
-        boolean existeRecurso = apiExternaService
+        Set<String> recursos = apiExternaService
             .getRecursos()
             .stream()
-            .anyMatch(recurso -> recurso.getId().equals(recursoId));
+            .map(RecursoDTO::getId)
+            .collect(Collectors.toSet());
 
-        if (!existeRecurso) {
+        if (!recursos.contains(recursoId)) {
             throw new IllegalArgumentException(
                 "No existe el recurso con ID: " + recursoId
             );
         }
 
-        LocalDate inicioSemana = fechaBusqueda.with(
-            TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)
-        );
-        LocalDate finSemana = fechaBusqueda.with(
-            TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)
-        );
-
-        List<CargaDeHoras> cargas = cargaHorasRepository
+        Stream<CargaDeHoras> cargasDeRecurso = cargaHorasRepository
             .findAll()
             .stream()
-            .filter(carga -> carga.getRecursoId().equals(recursoId))
-            .filter(carga -> {
+            .filter(carga -> carga.getRecursoId().equals(recursoId));
+
+        if (fechaBusqueda != null) {
+            LocalDate inicioSemana = fechaBusqueda.with(
+                TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)
+            );
+            LocalDate finSemana = fechaBusqueda.with(
+                TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)
+            );
+
+            cargasDeRecurso = cargasDeRecurso.filter(carga -> {
                 return (
                     carga.getFechaCarga().isEqual(inicioSemana) ||
                     carga.getFechaCarga().isEqual(finSemana) ||
                     (carga.getFechaCarga().isAfter(inicioSemana) &&
                         carga.getFechaCarga().isBefore(finSemana))
                 );
-            })
-            .toList();
+            });
+        }
 
         List<TareaDTO> tareas = apiExternaService.getTareas();
         List<ProyectoDTO> proyectos = apiExternaService.getProyectos();
 
-        return cargas
+        Map<String, TareaDTO> tareaMap = tareas
             .stream()
+            .collect(Collectors.toMap(TareaDTO::getId, tarea -> tarea));
+
+        Map<String, ProyectoDTO> proyectoMap = proyectos
+            .stream()
+            .collect(
+                Collectors.toMap(ProyectoDTO::getId, proyecto -> proyecto)
+            );
+
+        return cargasDeRecurso
             .map(carga -> {
-                String tareaNombre = tareas
-                    .stream()
-                    .filter(t -> t.getId().equals(carga.getTareaId()))
-                    .findFirst()
-                    .map(TareaDTO::getNombre)
-                    .orElse(null);
+                TareaDTO tarea = tareaMap.get(carga.getTareaId());
+                String tareaNombre = tarea != null ? tarea.getNombre() : null;
+                String proyectoId = tarea != null
+                    ? tarea.getProyectoId()
+                    : null;
 
-                String proyectoId = tareas
-                    .stream()
-                    .filter(t -> t.getId().equals(carga.getTareaId()))
-                    .findFirst()
-                    .map(TareaDTO::getProyectoId)
-                    .orElse(null);
-
-                String nombreProyecto = proyectos
-                    .stream()
-                    .filter(p -> p.getId().equals(proyectoId))
-                    .findFirst()
-                    .map(ProyectoDTO::getNombre)
-                    .orElse("Proyecto no encontrado");
+                String nombreProyecto = proyectoId != null
+                    ? proyectoMap
+                        .getOrDefault(proyectoId, new ProyectoDTO())
+                        .getNombre()
+                    : "Proyecto no encontrado";
 
                 return new CargaDeHorasPorRecursoDTO(
                     carga.getId(),
@@ -134,12 +143,18 @@ public class CargaDeHorasService {
                     nombreProyecto
                 );
             })
-            .toList();
+            .collect(Collectors.toList());
     }
 
     public CargaDeHoras cargarHoras(CargaDeHoras nuevaCarga) {
-        boolean existeTarea = apiExternaService
-            .getTareas()
+        List<TareaDTO> tareas = apiExternaService.getTareas();
+        List<String> recursos = apiExternaService
+            .getRecursos()
+            .stream()
+            .map(recurso -> recurso.getId())
+            .collect(Collectors.toList());
+
+        boolean existeTarea = tareas
             .stream()
             .anyMatch(tarea ->
                 tarea.getId().equals(nuevaCarga.getTareaId().toString())
@@ -151,12 +166,9 @@ public class CargaDeHorasService {
             );
         }
 
-        boolean existeRecurso = apiExternaService
-            .getRecursos()
-            .stream()
-            .anyMatch(recurso ->
-                recurso.getId().equals(nuevaCarga.getRecursoId().toString())
-            );
+        boolean existeRecurso = recursos.contains(
+            nuevaCarga.getRecursoId().toString()
+        );
 
         if (!existeRecurso) {
             throw new IllegalArgumentException(

@@ -73,21 +73,23 @@ public class App {
     @GetMapping("/carga-de-horas/{recursoId}")
     public ResponseEntity<?> obtenerCargasDeHorasPorRecurso(
         @PathVariable String recursoId,
-        @RequestParam(required = true) String fecha
+        @RequestParam(required = false) String fecha
     ) {
         try {
-            LocalDate fechaBusqueda = LocalDate.from(
-                CargaDeHoras.formatterFecha.parse(fecha)
-            );
+            LocalDate fechaBusqueda = null;
 
-            System.out.println(fechaBusqueda);
+            if (fecha != null) {
+                fechaBusqueda = LocalDate.from(
+                    CargaDeHoras.formatterFecha.parse(fecha)
+                );
+            }
 
-            List<CargaDeHorasPorRecursoDTO> recursosPorProyectos =
+            List<CargaDeHorasPorRecursoDTO> cargasDeRecurso =
                 cargaDeHorasService.obtenerCargasDeHorasPorRecurso(
                     recursoId,
                     fechaBusqueda
                 );
-            return new ResponseEntity<>(recursosPorProyectos, HttpStatus.OK);
+            return new ResponseEntity<>(cargasDeRecurso, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(
                 "Error al obtener recursos con proyectos: " + e.getMessage(),

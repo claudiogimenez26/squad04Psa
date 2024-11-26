@@ -315,13 +315,13 @@ public class CargaDeHorasServiceTest {
             tarea1Id,
             recursoId,
             8.0,
-            CargaDeHoras.formatterFecha.format(LocalDate.now())
+            "14/11/2024"
         );
         CargaDeHoras carga2 = new CargaDeHoras(
             tarea2Id,
             recursoId,
             4.0,
-            CargaDeHoras.formatterFecha.format(LocalDate.now())
+            "20/11/2023"
         );
 
         when(apiExternaService.getRecursos()).thenReturn(
@@ -338,10 +338,7 @@ public class CargaDeHorasServiceTest {
         );
 
         List<CargaDeHorasPorRecursoDTO> resultado =
-            cargaDeHorasService.obtenerCargasDeHorasPorRecurso(
-                recursoId,
-                LocalDate.now()
-            );
+            cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, null);
 
         assertEquals(2, resultado.size());
 
@@ -352,10 +349,7 @@ public class CargaDeHorasServiceTest {
             resultado.get(0).getCantidadHoras(),
             0.01
         );
-        assertEquals(
-            CargaDeHoras.formatterFecha.format(LocalDate.now()),
-            resultado.get(0).getFechaCarga()
-        );
+        assertEquals("14/11/2024", resultado.get(0).getFechaCarga());
         assertEquals("Proyecto 1", resultado.get(0).getNombreProyecto());
 
         assertEquals(carga2.getId(), resultado.get(1).getId());
@@ -365,10 +359,7 @@ public class CargaDeHorasServiceTest {
             resultado.get(1).getCantidadHoras(),
             0.01
         );
-        assertEquals(
-            CargaDeHoras.formatterFecha.format(LocalDate.now()),
-            resultado.get(1).getFechaCarga()
-        );
+        assertEquals("20/11/2023", resultado.get(1).getFechaCarga());
         assertEquals("Proyecto 2", resultado.get(1).getNombreProyecto());
     }
 
@@ -385,10 +376,7 @@ public class CargaDeHorasServiceTest {
         when(cargaDeHorasRepository.findAll()).thenReturn(Arrays.asList());
 
         List<CargaDeHorasPorRecursoDTO> resultado =
-            cargaDeHorasService.obtenerCargasDeHorasPorRecurso(
-                recursoId,
-                LocalDate.now()
-            );
+            cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, null);
 
         assertNotNull(resultado);
         assertEquals(0, resultado.size());
@@ -403,7 +391,7 @@ public class CargaDeHorasServiceTest {
         Exception e = assertThrows(IllegalArgumentException.class, () ->
             cargaDeHorasService.obtenerCargasDeHorasPorRecurso(
                 recursoInexistenteId,
-                LocalDate.now()
+                null
             )
         );
 
