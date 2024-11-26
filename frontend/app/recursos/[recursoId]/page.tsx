@@ -11,25 +11,33 @@ const INDICES_DIAS = {
 };
 
 export default async function ({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{ recursoId: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const recursoId = (await params).recursoId;
+  let fecha =
+    (await searchParams)["fecha"] || new Date().toLocaleDateString("es-AR");
 
-  const data = await fetch(
-    `${process.env.BACKEND_URL}/carga-de-horas/${recursoId}`
-  );
-  const cargasDeHoras: CargaDeHoras[] = await data.json();
+  if (typeof fecha != "string") {
+    fecha = fecha[0];
+  }
 
-  const cargasDeHorasPorDia = cargasDeHoras.map((c) => {
+  const url = `${process.env.BACKEND_URL}/carga-de-horas/${recursoId}?fecha=${encodeURIComponent(fecha)}`;
+
+  const res = await fetch(url);
+  const cargas: CargaDeHoras[] = await res.json();
+
+  const cargasPorDia = cargas.map((c) => {
     const [dia, mes, anio] = c.fechaCarga.split("/");
     const fechaCarga = new Date(Number(anio), Number(mes) - 1, Number(dia));
     return { ...c, fechaCarga };
   });
 
   return (
-    <table className="border border-gray-300">
+    <table className="border border-gray-300 w-full">
       <thead className="bg-gray-50 border-b border-gray-300">
         <tr className="grid grid-cols-7">
           {Object.keys(INDICES_DIAS).map((d) => (
@@ -40,17 +48,25 @@ export default async function ({
         </tr>
       </thead>
       <tbody>
-        <tr className="grid grid-cols-7">
-          {Object.values(INDICES_DIAS).map((i) => (
-            <td key={i}>
-              <ColumnaCargasDeHoraPorDia
-                cargasDeHoras={cargasDeHorasPorDia.filter(
-                  (c) => c.fechaCarga.getDay() === i
-                )}
-              />
+        {cargasPorDia.length > 0 ? (
+          <tr className="grid grid-cols-7 gap-1 p-1.5">
+            {Object.values(INDICES_DIAS).map((i) => (
+              <td key={i}>
+                <ColumnaCargasDeHoraPorDia
+                  cargasDeHoras={cargasPorDia.filter(
+                    (c) => c.fechaCarga.getDay() === i
+                  )}
+                />
+              </td>
+            ))}
+          </tr>
+        ) : (
+          <tr>
+            <td className="text-center p-4">
+              El recurso no tiene cargas de horas en esta semana.
             </td>
-          ))}
-        </tr>
+          </tr>
+        )}
       </tbody>
     </table>
   );
@@ -64,7 +80,7 @@ function ColumnaCargasDeHoraPorDia({
   })[];
 }) {
   return (
-    <div className="flex flex-col gap-2 py-2 h-[600px]">
+    <div className="flex flex-col gap-1.5">
       {cargasDeHoras.map((c) => (
         <div key={c.id}>
           <BloqueCargaDeHoras {...c} />
@@ -75,20 +91,23 @@ function ColumnaCargasDeHoraPorDia({
 }
 
 function BloqueCargaDeHoras({
-  nombreProyecto,
+  tareaNombre,
   cantidadHoras
 }: {
-  nombreProyecto: string;
+  tareaNombre: string;
   cantidadHoras: number;
 }) {
-  const altura = (cantidadHoras / 24) * 576;
+  const alturaRem = 6.0 + Math.min(cantidadHoras - 1, 23) * 0.75;
 
   return (
     <div
-      className="border border-emerald-500 bg-emerald-200 p-2 overflow-y-scroll"
-      style={{ height: `${altura}px`, minHeight: "4.5rem" }}
+      className="border border-emerald-500 bg-emerald-200 p-2 overflow-y-auto overflow-x-hidden flex flex-col"
+      style={{ height: `${alturaRem}rem` }}
     >
-      {nombreProyecto} - {cantidadHoras} horas
+      <span className="font-semibold underline">
+        {cantidadHoras} hora{cantidadHoras > 1 && "s"}
+      </span>
+      <span className="text-sm">{tareaNombre}</span>
     </div>
   );
 }

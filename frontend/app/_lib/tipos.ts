@@ -28,6 +28,7 @@ export type Rol = {
 export type CargaDeHoras = {
   id: string;
   tareaId: string;
+  tareaNombre: string;
   cantidadHoras: number;
   fechaCarga: string;
   nombreProyecto: string;

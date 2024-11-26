@@ -2,10 +2,11 @@
 
 import { Recurso } from "@/_lib/tipos";
 import { Label, Select } from "flowbite-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function SelectorRecurso({ recursos }: { recursos: Recurso[] }) {
   const router = useRouter();
+  const pathName = usePathname();
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const recursoSeleccionado = recursos.find((r) => r.id === e.target.value);
@@ -17,7 +18,11 @@ export default function SelectorRecurso({ recursos }: { recursos: Recurso[] }) {
   return (
     <div className="space-y-2">
       <Label htmlFor="recursoId" value="Seleccione un recurso" />
-      <Select id="recursoId" onChange={handleChange}>
+      <Select
+        id="recursoId"
+        defaultValue={pathName.split("/").at(-1)}
+        onChange={handleChange}
+      >
         {recursos.map((r) => (
           <option key={r.id} value={r.id}>
             {r.dni} - {r.nombre} {r.apellido}
