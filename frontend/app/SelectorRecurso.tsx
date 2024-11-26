@@ -1,27 +1,26 @@
 "use client";
 
-import { RecursoContext } from "@/_context/recursoContext";
+import { RecursoActualContext } from "@/_context/recursoActualContext";
 import { Label, Select } from "flowbite-react";
 import { useContext } from "react";
 
-export default function SelectRecurso() {
-  const recursoContext = useContext(RecursoContext);
+export default function SelectorRecurso() {
+  const recursoActualContext = useContext(RecursoActualContext);
 
   if (
-    !recursoContext ||
-    !recursoContext.state ||
-    !recursoContext.state.recursos ||
-    !recursoContext.state.recursoActual
+    !recursoActualContext ||
+    !recursoActualContext.state ||
+    !recursoActualContext.state.recursos ||
+    !recursoActualContext.state.recursoActual
   ) {
     return null;
   }
 
-  const { recursos, recursoActual } = recursoContext.state;
-  const dispatch = recursoContext.dispatch;
+  const { recursos, recursoActual } = recursoActualContext.state;
+  const dispatch = recursoActualContext.dispatch;
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const recursoSeleccionado = recursos.find((r) => r.id === e.target.value);
-    console.log(recursoSeleccionado);
     if (recursoSeleccionado) {
       dispatch({ payload: recursoSeleccionado });
     }

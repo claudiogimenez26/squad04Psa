@@ -1,5 +1,7 @@
 "use server";
 
+import { CargaDeHoras } from "@/_lib/tipos";
+
 export async function cargarHoras(formData: FormData) {
   try {
     const res = await fetch(`${process.env.BACKEND_URL}/carga-de-horas`, {
@@ -19,10 +21,18 @@ export async function cargarHoras(formData: FormData) {
       throw new Error(await res.text());
     }
 
-    return { success: true };
+    const cargaDeHoras: CargaDeHoras = await res.json();
+    console.info(cargaDeHoras);
+
+    return {
+      exito: true,
+      mensaje: `Carga de horas registrada exitosamente con ID: ${cargaDeHoras.id}`
+    };
   } catch (error) {
-    return { success: false, error: (error as Error).message };
+    return {
+      exito: false,
+      mensaje:
+        (error as Error).message || "Error interno al guardar la carga de horas"
+    };
   }
 }
-
-export async function actualizarCargaDeHoras(formData: FormData) {}

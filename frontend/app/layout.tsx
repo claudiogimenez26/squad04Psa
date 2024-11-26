@@ -1,7 +1,6 @@
 import "./globals.css";
 
-import RecursoActual from "@/_componentes/RecursoActual";
-import RecursoContextProvider from "@/_context/recursoContext";
+import RecursoActualContextProvider from "@/_context/recursoActualContext";
 import { Recurso } from "@/_lib/tipos";
 import {
   Navbar,
@@ -10,6 +9,7 @@ import {
   NavbarLink
 } from "flowbite-react";
 import { Inter } from "next/font/google";
+import IndicadorRecursoActual from "./IndicadorRecursoActual";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -28,22 +28,22 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans`}>
-        <RecursoContextProvider recursos={recursos}>
+        <RecursoActualContextProvider recursos={recursos}>
           <Navbar className="border-b">
             <NavbarBrand>
               <span className="self-center text-xl font-semibold">PSA</span>
             </NavbarBrand>
             <NavbarCollapse>
-              <NavbarLink href="/consultar-cargas">Consultar cargas</NavbarLink>
-              <NavbarLink href="/consultar-costos">Consultar costos</NavbarLink>
+              <NavbarLink href="/recursos">Cargas recursos</NavbarLink>
+              <NavbarLink href="/proyectos">Costos proyectos</NavbarLink>
               <NavbarLink href="/carga-de-horas">Cargar horas</NavbarLink>
               <NavbarLink href="/">
-                <RecursoActual />
+                <IndicadorRecursoActual />
               </NavbarLink>
             </NavbarCollapse>
           </Navbar>
           <main className="container mx-auto p-6">{children}</main>
-        </RecursoContextProvider>
+        </RecursoActualContextProvider>
       </body>
     </html>
   );

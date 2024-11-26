@@ -33,10 +33,10 @@ export default function FormularioConsultaCostos({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-4xl font-bold">Consultar costos</h1>
+      <h1 className="text-4xl font-bold">Consultar costos por proyecto</h1>
 
       <div className="space-y-2">
-        <Label htmlFor="proyectoId" value="Seleccion un proyecto" />
+        <Label htmlFor="proyectos" value="Seleccion un proyecto" />
         <Select id="proyectos">
           {proyectos.map((p) => (
             <option key={p.id} value={p.id}>

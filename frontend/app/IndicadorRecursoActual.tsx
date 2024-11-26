@@ -1,16 +1,16 @@
 "use client";
 
-import { RecursoContext } from "@/_context/recursoContext";
+import { RecursoActualContext } from "@/_context/recursoActualContext";
 import { useContext } from "react";
 
-export default function RecursoActual() {
-  const recursoContext = useContext(RecursoContext);
+export default function IndicadorRecursoActual() {
+  const recursoActualContext = useContext(RecursoActualContext);
 
-  if (!recursoContext || !recursoContext.state?.recursoActual) {
+  if (!recursoActualContext || !recursoActualContext.state?.recursoActual) {
     return null;
   }
 
-  const { recursoActual } = recursoContext.state;
+  const { recursoActual } = recursoActualContext.state;
 
   return (
     <span className="flex items-center gap-2">

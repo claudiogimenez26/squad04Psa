@@ -21,6 +21,10 @@ if (process.env.NODE_ENV === "development") {
   }
 }
 
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  experimental: {
+    ppr: "incremental"
+  }
+};
 
 export default nextConfig;

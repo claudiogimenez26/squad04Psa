@@ -26,7 +26,9 @@ export type Rol = {
 };
 
 export type CargaDeHoras = {
+  id: string;
   tareaId: string;
   cantidadHoras: number;
-  fechaCarga: Date;
+  fechaCarga: string;
+  nombreProyecto: string;
 };

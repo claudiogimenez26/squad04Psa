@@ -12,7 +12,7 @@ import {
 type State = { recursos: Recurso[]; recursoActual: Recurso | null };
 type Action = { payload: Recurso };
 
-export const RecursoContext = createContext<{
+export const RecursoActualContext = createContext<{
   state: State;
   dispatch: Dispatch<Action>;
 } | null>(null);
@@ -22,7 +22,7 @@ function reducer(state: State, action: Action): State {
   return { ...state, recursoActual: action.payload };
 }
 
-export default function RecursoContextProvider({
+export default function RecursoActualContextProvider({
   recursos,
   children
 }: {
@@ -51,8 +51,8 @@ export default function RecursoContextProvider({
   }
 
   return (
-    <RecursoContext.Provider value={{ state, dispatch }}>
+    <RecursoActualContext.Provider value={{ state, dispatch }}>
       {children}
-    </RecursoContext.Provider>
+    </RecursoActualContext.Provider>
   );
 }
