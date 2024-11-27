@@ -5,14 +5,11 @@ import static org.mockito.Mockito.*;
 
 import io.cucumber.java.Before;
 import io.cucumber.java.es.Cuando;
-import io.cucumber.java.es.Dado;
 import io.cucumber.java.es.Y;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import psa.cargahoras.dto.ProyectoDTO;
 import psa.cargahoras.entity.CargaDeHoras;
 import psa.cargahoras.repository.CargaDeHorasRepository;
 import psa.cargahoras.service.CargaDeHorasService;
@@ -20,12 +17,12 @@ import psa.cargahoras.service.CargaDeHorasService;
 public class ConsultaCargasDeHorasPorProyectoSteps {
 
   private final TestContext testContext;
+  private final ProyectoCommonSteps proyectoCommonSteps;
   private final TareaCommonSteps tareaCommonSteps;
   private final ResultadoOperacionCommonSteps resultadoOperacionCommonSteps;
 
   @Mock private CargaDeHorasRepository cargaDeHorasRepository;
 
-  private ProyectoDTO proyecto;
   private List<CargaDeHoras> cargasDeHorasIniciales;
   private List<CargaDeHoras> cargasDeHorasFinales;
 
@@ -33,9 +30,11 @@ public class ConsultaCargasDeHorasPorProyectoSteps {
 
   public ConsultaCargasDeHorasPorProyectoSteps(
       TestContext testContext,
+      ProyectoCommonSteps proyectoCommonSteps,
       TareaCommonSteps tareaCommonSteps,
       ResultadoOperacionCommonSteps resultadoOperacionCommonSteps) {
     this.testContext = testContext;
+    this.proyectoCommonSteps = proyectoCommonSteps;
     this.tareaCommonSteps = tareaCommonSteps;
     this.resultadoOperacionCommonSteps = resultadoOperacionCommonSteps;
   }
@@ -47,16 +46,6 @@ public class ConsultaCargasDeHorasPorProyectoSteps {
     cargasDeHorasIniciales = new ArrayList<>();
     cargaDeHorasService =
         new CargaDeHorasService(cargaDeHorasRepository, testContext.getApiExternaService());
-  }
-
-  @Dado("un proyecto con id {string}")
-  @Dado("un proyecto sin tareas con id {string}")
-  public void dadoUnProyecto(String proyectoId) {
-    proyecto = mock(ProyectoDTO.class);
-
-    when(proyecto.getId()).thenReturn(proyectoId);
-
-    when(testContext.getApiExternaService().getProyectos()).thenReturn(Arrays.asList(proyecto));
   }
 
   @Y("una carga de horas con id {string}, con tarea con id {string}")
@@ -74,7 +63,9 @@ public class ConsultaCargasDeHorasPorProyectoSteps {
   public void consultarCargasDeHorasDelProyecto() {
     cargasDeHorasFinales =
         resultadoOperacionCommonSteps.ejecutar(
-            () -> cargaDeHorasService.obtenerCargasDeHorasPorProyecto(proyecto.getId()));
+            () ->
+                cargaDeHorasService.obtenerCargasDeHorasPorProyecto(
+                    proyectoCommonSteps.getProyecto().getId()));
   }
 
   @Y("la cantidad de cargas de horas del proyecto debe ser {int}")
@@ -88,14 +79,5 @@ public class ConsultaCargasDeHorasPorProyectoSteps {
         cargasDeHorasFinales.stream().anyMatch(carga -> carga.getId().equals(cargaId));
 
     assertEquals(true, existeCarga);
-  }
-
-  @Dado("un proyecto con id inexistente {string}")
-  public void dadoUnProyectoConIdInexistente(String proyectoId) {
-    proyecto = mock(ProyectoDTO.class);
-
-    when(proyecto.getId()).thenReturn(proyectoId);
-
-    when(testContext.getApiExternaService().getProyectos()).thenReturn(Arrays.asList());
   }
 }

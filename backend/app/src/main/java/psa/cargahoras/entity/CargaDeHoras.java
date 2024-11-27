@@ -61,6 +61,10 @@ public class CargaDeHoras {
     return id;
   }
 
+  public void setId(String id) {
+    this.id = id;
+  }
+
   public String getTareaId() {
     return tareaId;
   }
