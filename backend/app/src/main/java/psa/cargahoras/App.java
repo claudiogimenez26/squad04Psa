@@ -1,5 +1,8 @@
 package psa.cargahoras;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +19,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import psa.cargahoras.dto.CargaDeHorasPorRecursoDTO;
+import psa.cargahoras.dto.CostoRecursoDTO;
 import psa.cargahoras.dto.ProyectoDTO;
 import psa.cargahoras.dto.RecursoDTO;
 import psa.cargahoras.dto.RolDTO;
@@ -25,6 +30,7 @@ import psa.cargahoras.dto.TareaDTO;
 import psa.cargahoras.entity.CargaDeHoras;
 import psa.cargahoras.service.ApiExternaService;
 import psa.cargahoras.service.CargaDeHorasService;
+import psa.cargahoras.service.RecursoService;
 
 @SpringBootApplication
 @RestController
@@ -36,6 +42,8 @@ public class App {
   @Autowired private CargaDeHorasService cargaDeHorasService;
 
   @Autowired private ApiExternaService apiExternaService;
+
+  @Autowired private RecursoService recursoService;
 
   @GetMapping("/carga-de-horas")
   public ResponseEntity<List<CargaDeHoras>> obtenerCargasDeHoras() {
@@ -62,11 +70,21 @@ public class App {
   }
 
   @GetMapping("/carga-de-horas/{recursoId}")
-  public ResponseEntity<?> obtenerCargasDeHorasPorRecurso(@PathVariable String recursoId) {
+  public ResponseEntity<?> obtenerCargasDeHorasPorRecurso(
+      @PathVariable String recursoId, @RequestParam(required = false) String fecha) {
     try {
-      List<CargaDeHorasPorRecursoDTO> recursosPorProyectos =
-          cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId);
-      return new ResponseEntity<>(recursosPorProyectos, HttpStatus.OK);
+      LocalDate fechaBusqueda = null;
+
+      if (fecha != null) {
+        String decodedFecha = URLDecoder.decode(fecha, StandardCharsets.UTF_8.toString());
+        fechaBusqueda = LocalDate.from(CargaDeHoras.formatterFecha.parse(decodedFecha));
+      }
+
+      List<CargaDeHorasPorRecursoDTO> cargasDeRecurso =
+          cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, fechaBusqueda);
+      return new ResponseEntity<>(cargasDeRecurso, HttpStatus.OK);
+    } catch (IllegalArgumentException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     } catch (Exception e) {
       return new ResponseEntity<>(
           "Error al obtener recursos con proyectos: " + e.getMessage(),
@@ -93,17 +111,27 @@ public class App {
     }
   }
 
-  @DeleteMapping("/carga-de-horas/{cargaId}")
-  public ResponseEntity<?> eliminarCargaDeHoras(@PathVariable String cargaId) {
+  @DeleteMapping("/carga-de-horas/{cargaDeHorasId}")
+  public ResponseEntity<?> eliminarCargaDeHoras(@PathVariable String cargaDeHorasId) {
     try {
-      // TODO: Implementar la funcionalidad de eliminacion, la logica de
-      // validacion se hace en el service directamente, en la request solo
-      // te pasan un id, si el id existe ya lo validas en el service.
-      //
-      // En caso de que el id sea invalido y no haya una carga con dicho
-      // id, retornar HttpStatus.NOT_FOUND.
-      //
+      cargaDeHorasService.eliminarCargaDeHoras(cargaDeHorasId);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (IllegalArgumentException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    } catch (Exception e) {
+      return new ResponseEntity<>(
+          "Error interno del servidor: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @GetMapping("/costos/recursos/{recursoId}")
+  public ResponseEntity<?> obtenerCostosPorRecurso(
+      @PathVariable String recursoId, @RequestParam(required = false) String fecha) {
+    try {
+      CostoRecursoDTO costoPorRecurso = recursoService.obtenerCostoPorRecurso(recursoId);
+      return new ResponseEntity<>(costoPorRecurso, HttpStatus.OK);
+    } catch (IllegalArgumentException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     } catch (Exception e) {
       return new ResponseEntity<>(
           "Error interno del servidor: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

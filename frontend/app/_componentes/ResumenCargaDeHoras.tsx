@@ -33,7 +33,7 @@ export default function ResumenCargaDeHoras({
         </Table.Row>
         <Table.Row>
           <Table.Cell>Fecha de carga</Table.Cell>
-          <Table.Cell>{fechaCarga.toLocaleDateString()}</Table.Cell>
+          <Table.Cell>{fechaCarga.toLocaleDateString("es-AR")}</Table.Cell>
         </Table.Row>
       </Table.Body>
     </Table>

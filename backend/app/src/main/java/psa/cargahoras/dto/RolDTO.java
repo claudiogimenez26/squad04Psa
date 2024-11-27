@@ -5,6 +5,20 @@ public class RolDTO {
   private String id;
   private String nombre;
   private String experiencia;
+  private double costo;
+
+  private double definirCosto() {
+    return switch (String.join(" ", nombre, experiencia)) {
+      case "Desarrollador Senior" -> 30;
+      case "Desarrollador Semi-Senior" -> 25;
+      case "Desarrollador Junior" -> 20;
+      case "Analista nivel I" -> 20;
+      case "Analista nivel II" -> 25;
+      default -> 30;
+    };
+  }
+
+  public RolDTO() {}
 
   public String getId() {
     return id;
@@ -28,5 +42,13 @@ public class RolDTO {
 
   public void setExperiencia(String experiencia) {
     this.experiencia = experiencia;
+  }
+
+  public double getCosto() {
+    return definirCosto();
+  }
+
+  public void setCosto(Integer costo) {
+    this.costo = costo;
   }
 }

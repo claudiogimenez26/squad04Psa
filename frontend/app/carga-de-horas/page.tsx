@@ -1,6 +1,5 @@
 import type { Proyecto, Tarea } from "@/_lib/tipos";
-
-import FormularioCargaDeHoras from "@/_componentes/FormularioCargaDeHoras";
+import Formulario from "./Formulario";
 
 export default async function () {
   const [proyectos, tareas] = (await Promise.all([
@@ -11,7 +10,7 @@ export default async function () {
   return (
     <div className="space-y-6">
       <h1 className="text-4xl font-bold">Cargar horas</h1>
-      <FormularioCargaDeHoras proyectos={proyectos} tareas={tareas} />
+      <Formulario proyectos={proyectos} tareas={tareas} />
     </div>
   );
 }

@@ -12,33 +12,41 @@ import java.util.List;
 import java.util.UUID;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import psa.cargahoras.dto.CargaDeHorasPorRecursoDTO;
+import psa.cargahoras.dto.CostoRecursoDTO;
 import psa.cargahoras.dto.TareaDTO;
 import psa.cargahoras.entity.CargaDeHoras;
 import psa.cargahoras.repository.CargaDeHorasRepository;
+import psa.cargahoras.service.ApiExternaService;
 import psa.cargahoras.service.CargaDeHorasService;
+import psa.cargahoras.service.RecursoService;
 
-public class ConsultaCargasDeHorasPorRecursoSteps {
+public class ConsultaDeCostoRecursoSteps {
 
-  private final TestContext testContext;
   private final RecursoCommonSteps recursoCommonSteps;
+  // private final ROLCommonSteps rolCommonSteps;
   private final ResultadoOperacionCommonSteps resultadoOperacionCommonSteps;
+  private final TestContext testContext;
+
+  private RecursoService recursoService;
+
+  @Mock private ApiExternaService apiExternaService;
 
   @Mock private CargaDeHorasRepository cargaDeHorasRepository;
 
+  @Mock private CargaDeHorasService cargaDeHorasService;
+
   private List<CargaDeHoras> cargasDeHoras;
-  private List<CargaDeHorasPorRecursoDTO> cargasDeHorasIniciales;
-  private List<CargaDeHorasPorRecursoDTO> cargasDeHorasFinales;
+  private CostoRecursoDTO costoRecurso;
 
-  private CargaDeHorasService cargaDeHorasService;
-
-  public ConsultaCargasDeHorasPorRecursoSteps(
-      TestContext testContext,
+  public ConsultaDeCostoRecursoSteps(
+      ResultadoOperacionCommonSteps resultadoOperacionCommonSteps,
       RecursoCommonSteps recursoCommonSteps,
-      ResultadoOperacionCommonSteps resultadoOperacionCommonSteps) {
-    this.testContext = testContext;
+      /*ROLCommonSteps rolCommonSteps,*/
+      TestContext testContext) {
     this.recursoCommonSteps = recursoCommonSteps;
+    // this.rolCommonSteps = rolCommonSteps;
     this.resultadoOperacionCommonSteps = resultadoOperacionCommonSteps;
+    this.testContext = testContext;
   }
 
   @Before
@@ -46,14 +54,15 @@ public class ConsultaCargasDeHorasPorRecursoSteps {
     MockitoAnnotations.openMocks(this);
 
     cargasDeHoras = new ArrayList<>();
-    cargasDeHorasIniciales = new ArrayList<>();
     cargaDeHorasService =
         new CargaDeHorasService(cargaDeHorasRepository, testContext.getApiExternaService());
+    recursoService = new RecursoService(testContext.getApiExternaService(), cargaDeHorasService);
   }
 
   @Y(
-      "una carga de horas con id {string}, con tarea con id {string}, cargada por el recurso con id {string}")
-  public void dadaUnaCargaDeHorasConTarea(String cargaDeHorasId, String tareaId, String recursoId) {
+      "una carga de horas con id {string}, con tarea con id {string}, cargada por el recurso con id {string} con {double} horas cargadas")
+  public void dadaUnaCargaDeHorasConTarea(
+      String cargaDeHorasId, String tareaId, String recursoId, double cantidadHoras) {
     TareaDTO tarea = mock(TareaDTO.class);
 
     when(tarea.getId()).thenReturn(tareaId);
@@ -66,30 +75,21 @@ public class ConsultaCargasDeHorasPorRecursoSteps {
     when(cargaDeHoras.getTareaId()).thenReturn(tareaId);
     when(cargaDeHoras.getRecursoId()).thenReturn(recursoId);
     when(cargaDeHoras.getFechaCarga()).thenReturn(LocalDate.now());
+    when(cargaDeHoras.getCantidadHoras()).thenReturn(cantidadHoras);
 
     cargasDeHoras.add(cargaDeHoras);
     when(cargaDeHorasRepository.findAll()).thenReturn(cargasDeHoras);
   }
 
-  @Cuando("consulto las cargas de horas del recurso")
-  public void consultarCargasDeHorasDelRecurso() {
-    cargasDeHorasFinales =
+  @Cuando("consulto el costo del recurso")
+  public void consultarCostoRecurso() {
+    costoRecurso =
         resultadoOperacionCommonSteps.ejecutar(
-            () ->
-                cargaDeHorasService.obtenerCargasDeHorasPorRecurso(
-                    recursoCommonSteps.getRecurso().getId(), LocalDate.now()));
+            () -> recursoService.obtenerCostoPorRecurso(recursoCommonSteps.getRecurso().getId()));
   }
 
-  @Y("la cantidad de cargas de horas del recurso debe ser {int}")
-  public void verificarCantidadCargasDeHoras(int cantidadEsperada) {
-    assertEquals(cantidadEsperada, cargasDeHorasFinales.size());
-  }
-
-  @Y("una de las cargas de horas del recurso debe tener id {string}")
-  public void verificarIdAlgunaCargaDeHoras(String cargaId) {
-    boolean existeCarga =
-        cargasDeHorasFinales.stream().anyMatch(carga -> carga.getId().equals(cargaId));
-
-    assertEquals(true, existeCarga);
+  @Y("el costo del recurso debe ser {int}")
+  public void verificarCostoRecurso(int costoEsperado) {
+    assertEquals(costoEsperado, costoRecurso.getCosto());
   }
 }
