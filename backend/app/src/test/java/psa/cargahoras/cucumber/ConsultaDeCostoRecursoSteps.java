@@ -85,7 +85,9 @@ public class ConsultaDeCostoRecursoSteps {
   public void consultarCostoRecurso() {
     costoRecurso =
         resultadoOperacionCommonSteps.ejecutar(
-            () -> recursoService.obtenerCostoPorRecurso(recursoCommonSteps.getRecurso().getId()));
+            () ->
+                recursoService.obtenerCostoPorRecurso(
+                    recursoCommonSteps.getRecurso().getId(), null, null));
   }
 
   @Y("el costo del recurso debe ser {int}")

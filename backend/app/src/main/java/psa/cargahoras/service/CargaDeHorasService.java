@@ -28,7 +28,7 @@ public class CargaDeHorasService {
     this.apiExternaService = apiExternaService;
   }
 
-  public List<CargaDeHoras> obtenerTodasLasCargasDeHoras() {
+  public List<CargaDeHoras> obtenerCargasDeHoras() {
     return cargaHorasRepository.findAll();
   }
 
@@ -58,7 +58,7 @@ public class CargaDeHorasService {
   }
 
   public List<CargaDeHorasPorRecursoDTO> obtenerCargasDeHorasPorRecurso(
-      String recursoId, LocalDate fechaBusqueda) {
+      String recursoId, LocalDate fechaInicio, LocalDate fechaFin) {
     Set<String> recursos =
         apiExternaService.getRecursos().stream().map(RecursoDTO::getId).collect(Collectors.toSet());
 
@@ -70,10 +70,17 @@ public class CargaDeHorasService {
         cargaHorasRepository.findAll().stream()
             .filter(carga -> carga.getRecursoId().equals(recursoId));
 
-    if (fechaBusqueda != null) {
-      LocalDate inicioSemana =
-          fechaBusqueda.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
-      LocalDate finSemana = fechaBusqueda.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
+    if (fechaInicio != null && fechaFin != null) {
+      cargasDeRecurso =
+          cargasDeRecurso.filter(
+              carga ->
+                  (carga.getFechaCarga().isEqual(fechaInicio)
+                      || carga.getFechaCarga().isEqual(fechaFin)
+                      || (carga.getFechaCarga().isAfter(fechaInicio)
+                          && carga.getFechaCarga().isBefore(fechaFin))));
+    } else if (fechaInicio != null) {
+      LocalDate inicioSemana = fechaInicio.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+      LocalDate finSemana = fechaInicio.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
 
       cargasDeRecurso =
           cargasDeRecurso.filter(

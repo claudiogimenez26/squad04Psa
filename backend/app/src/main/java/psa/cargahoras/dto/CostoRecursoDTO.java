@@ -4,12 +4,12 @@ public class CostoRecursoDTO {
 
   private String id;
   private String rolId;
-  private int costo;
+  private double costo;
   private String nombreRecurso;
   private String nombreRol;
 
   public CostoRecursoDTO(
-      String id, String rolId, int costo, String nombreRecurso, String nombreRol) {
+      String id, String rolId, double costo, String nombreRecurso, String nombreRol) {
     this.id = id;
     this.rolId = rolId;
     this.costo = costo;
@@ -33,7 +33,7 @@ public class CostoRecursoDTO {
     this.rolId = rolId;
   }
 
-  public int getCosto() {
+  public double getCosto() {
     return costo;
   }
 

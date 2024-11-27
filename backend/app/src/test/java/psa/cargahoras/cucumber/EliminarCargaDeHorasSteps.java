@@ -35,7 +35,6 @@ public class EliminarCargaDeHorasSteps {
 
   @Entonces("la tarea no debe tener horas cargadas")
   public void verificarTareaNoTieneHorasCargadas() {
-    assertEquals(
-        0, cargaDeHorasCommonSteps.getCargaDeHorasService().obtenerTodasLasCargasDeHoras().size());
+    assertEquals(0, cargaDeHorasCommonSteps.getCargaDeHorasService().obtenerCargasDeHoras().size());
   }
 }

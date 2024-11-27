@@ -77,7 +77,7 @@ public class ConsultaCargasDeHorasPorRecursoSteps {
         resultadoOperacionCommonSteps.ejecutar(
             () ->
                 cargaDeHorasService.obtenerCargasDeHorasPorRecurso(
-                    recursoCommonSteps.getRecurso().getId(), LocalDate.now()));
+                    recursoCommonSteps.getRecurso().getId(), null, null));
   }
 
   @Y("la cantidad de cargas de horas del recurso debe ser {int}")

@@ -3,7 +3,6 @@ package psa.cargahoras.service;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -56,13 +55,13 @@ public class RecursoServiceTest {
         new CargaDeHorasService(cargaDeHorasRepository, apiExternaService);
 
     List<CargaDeHorasPorRecursoDTO> cargaPorRecurso1 =
-        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId1, null);
+        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId1, null, null);
 
     when(apiExternaService.getRoles()).thenReturn(Arrays.asList(rol1));
-    when(mockCargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId1, null))
+    when(mockCargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId1, null, null))
         .thenReturn(cargaPorRecurso1);
 
-    CostoRecursoDTO costoRecurso1 = recursoService.obtenerCostoPorRecurso(recursoId1);
+    CostoRecursoDTO costoRecurso1 = recursoService.obtenerCostoPorRecurso(recursoId1, null, null);
 
     assertEquals("Juan Gómez", costoRecurso1.getNombreRecurso());
     assertEquals("Desarrollador Senior", costoRecurso1.getNombreRol());
@@ -110,17 +109,17 @@ public class RecursoServiceTest {
         new CargaDeHorasService(cargaDeHorasRepository, apiExternaService);
 
     List<CargaDeHorasPorRecursoDTO> cargaPorRecurso1 =
-        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId1, LocalDate.now());
+        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId1, null, null);
     List<CargaDeHorasPorRecursoDTO> cargaPorRecurso2 =
-        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId2, LocalDate.now());
+        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId2, null, null);
 
     when(apiExternaService.getRoles()).thenReturn(Arrays.asList(rol1, rol2));
-    when(mockCargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId1, null))
+    when(mockCargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId1, null, null))
         .thenReturn(cargaPorRecurso1);
-    when(mockCargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId2, null))
+    when(mockCargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId2, null, null))
         .thenReturn(cargaPorRecurso2);
 
-    List<CostoRecursoDTO> costosPorRecurso = recursoService.obtenerCostosDeTodosLosRecursos();
+    List<CostoRecursoDTO> costosPorRecurso = recursoService.obtenerCostosDeRecursos();
 
     assertEquals("Juan Gómez", costosPorRecurso.get(0).getNombreRecurso());
     assertEquals("Desarrollador Senior", costosPorRecurso.get(0).getNombreRol());
@@ -140,7 +139,7 @@ public class RecursoServiceTest {
     Exception e =
         assertThrows(
             IllegalArgumentException.class,
-            () -> recursoService.obtenerCostoPorRecurso(recursoInexistenteId));
+            () -> recursoService.obtenerCostoPorRecurso(recursoInexistenteId, null, null));
 
     assertEquals("No existe el recurso con ID: " + recursoInexistenteId, e.getMessage());
   }

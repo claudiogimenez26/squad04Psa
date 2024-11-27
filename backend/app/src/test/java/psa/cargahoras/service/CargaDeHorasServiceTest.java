@@ -3,6 +3,7 @@ package psa.cargahoras.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -141,7 +142,7 @@ public class CargaDeHorasServiceTest {
         cargaDeHorasService.cargarHoras(
             new CargaDeHoras(tareaId, recursoId, cantidadHoras, fechaCargaStr));
 
-    List<CargaDeHoras> cargasGuardadas = cargaDeHorasService.obtenerTodasLasCargasDeHoras();
+    List<CargaDeHoras> cargasGuardadas = cargaDeHorasService.obtenerCargasDeHoras();
 
     assertNotNull(cargasGuardadas);
     assertEquals(2, cargasGuardadas.size());
@@ -279,7 +280,7 @@ public class CargaDeHorasServiceTest {
     when(cargaDeHorasRepository.findAll()).thenReturn(Arrays.asList(carga1, carga2));
 
     List<CargaDeHorasPorRecursoDTO> resultado =
-        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, null);
+        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, null, null);
 
     assertEquals(2, resultado.size());
 
@@ -307,7 +308,7 @@ public class CargaDeHorasServiceTest {
     when(cargaDeHorasRepository.findAll()).thenReturn(Arrays.asList());
 
     List<CargaDeHorasPorRecursoDTO> resultado =
-        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, null);
+        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, null, null);
 
     assertNotNull(resultado);
     assertEquals(0, resultado.size());
@@ -322,60 +323,11 @@ public class CargaDeHorasServiceTest {
     Exception e =
         assertThrows(
             IllegalArgumentException.class,
-            () -> cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoInexistenteId, null));
+            () ->
+                cargaDeHorasService.obtenerCargasDeHorasPorRecurso(
+                    recursoInexistenteId, null, null));
 
     assertEquals("No existe el recurso con ID: " + recursoInexistenteId, e.getMessage());
-  }
-
-  @Test
-  public void obtenerCargasDeHorasPorRecursoConFiltroPorSemana() {
-    String recursoId = UUID.randomUUID().toString();
-    String tareaId = UUID.randomUUID().toString();
-    String proyectoId = UUID.randomUUID().toString();
-
-    RecursoDTO recurso = new RecursoDTO();
-    recurso.setId(recursoId);
-
-    ProyectoDTO proyecto = new ProyectoDTO();
-    proyecto.setId(proyectoId);
-    proyecto.setNombre("Proyecto Test");
-
-    TareaDTO tarea = new TareaDTO();
-    tarea.setId(tareaId);
-    tarea.setProyectoId(proyectoId);
-
-    LocalDate fechaInicioSemana = LocalDate.of(2024, 11, 18);
-    LocalDate fechaFinSemana = LocalDate.of(2024, 11, 24);
-    LocalDate fechaCargaDentroDelRango = LocalDate.of(2024, 11, 20);
-    LocalDate fechaCargaFueraDelRango = LocalDate.of(2024, 11, 25);
-
-    CargaDeHoras cargaDentroDelRango =
-        new CargaDeHoras(
-            tareaId, recursoId, 8.0, CargaDeHoras.formatterFecha.format(fechaCargaDentroDelRango));
-    CargaDeHoras cargaFueraDelRango =
-        new CargaDeHoras(
-            tareaId, recursoId, 4.0, CargaDeHoras.formatterFecha.format(fechaCargaFueraDelRango));
-
-    when(apiExternaService.getRecursos()).thenReturn(Arrays.asList(recurso));
-    when(apiExternaService.getTareas()).thenReturn(Arrays.asList(tarea));
-    when(apiExternaService.getProyectos()).thenReturn(Arrays.asList(proyecto));
-    when(cargaDeHorasRepository.findAll())
-        .thenReturn(Arrays.asList(cargaDentroDelRango, cargaFueraDelRango));
-
-    List<CargaDeHorasPorRecursoDTO> resultado =
-        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, fechaInicioSemana);
-
-    assertNotNull(resultado);
-    assertEquals(1, resultado.size());
-
-    CargaDeHorasPorRecursoDTO cargaResultado = resultado.get(0);
-    assertEquals(cargaDentroDelRango.getId(), cargaResultado.getId());
-    assertEquals(tareaId, cargaResultado.getTareaId());
-    assertEquals(cargaDentroDelRango.getCantidadHoras(), cargaResultado.getCantidadHoras(), 0.01);
-    assertEquals(
-        CargaDeHoras.formatterFecha.format(cargaDentroDelRango.getFechaCarga()),
-        cargaResultado.getFechaCarga());
-    assertEquals("Proyecto Test", cargaResultado.getNombreProyecto());
   }
 
   @Test
@@ -405,5 +357,97 @@ public class CargaDeHorasServiceTest {
     assertEquals("No existe la carga de horas con ID: " + cargaId, exception.getMessage());
 
     verify(cargaDeHorasRepository, never()).delete(any(CargaDeHoras.class));
+  }
+
+  @Test
+  public void obtenerCargasDeHorasPorRecursoEnUnaSemana() {
+    String recursoId = UUID.randomUUID().toString();
+    String tareaId = UUID.randomUUID().toString();
+    String proyectoId = UUID.randomUUID().toString();
+
+    RecursoDTO recurso = new RecursoDTO();
+    recurso.setId(recursoId);
+
+    ProyectoDTO proyecto = new ProyectoDTO();
+    proyecto.setId(proyectoId);
+    proyecto.setNombre("Proyecto Test");
+
+    TareaDTO tarea = new TareaDTO();
+    tarea.setId(tareaId);
+    tarea.setProyectoId(proyectoId);
+
+    LocalDate fechaReferencia = LocalDate.of(2023, 11, 15);
+
+    // Cargas dentro de la semana (domingo 12 a sábado 18)
+    CargaDeHoras cargaDentro1 = new CargaDeHoras(tareaId, recursoId, 8.0, "12/11/2023"); // domingo
+    CargaDeHoras cargaDentro2 =
+        new CargaDeHoras(tareaId, recursoId, 4.0, "15/11/2023"); // miércoles
+    CargaDeHoras cargaDentro3 = new CargaDeHoras(tareaId, recursoId, 6.0, "18/11/2023"); // sábado
+
+    // Cargas fuera de la semana
+    CargaDeHoras cargaFuera1 =
+        new CargaDeHoras(tareaId, recursoId, 8.0, "11/11/2023"); // sábado anterior
+    CargaDeHoras cargaFuera2 =
+        new CargaDeHoras(tareaId, recursoId, 4.0, "19/11/2023"); // domingo siguiente
+
+    when(apiExternaService.getRecursos()).thenReturn(Arrays.asList(recurso));
+    when(apiExternaService.getTareas()).thenReturn(Arrays.asList(tarea));
+    when(apiExternaService.getProyectos()).thenReturn(Arrays.asList(proyecto));
+    when(cargaDeHorasRepository.findAll())
+        .thenReturn(
+            Arrays.asList(cargaDentro1, cargaDentro2, cargaDentro3, cargaFuera1, cargaFuera2));
+
+    List<CargaDeHorasPorRecursoDTO> resultado =
+        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, fechaReferencia, null);
+
+    assertEquals(3, resultado.size());
+    assertTrue(resultado.stream().anyMatch(c -> c.getFechaCarga().equals("12/11/2023")));
+    assertTrue(resultado.stream().anyMatch(c -> c.getFechaCarga().equals("15/11/2023")));
+    assertTrue(resultado.stream().anyMatch(c -> c.getFechaCarga().equals("18/11/2023")));
+  }
+
+  @Test
+  public void obtenerCargasDeHorasPorRecursoEntreFechas() {
+    String recursoId = UUID.randomUUID().toString();
+    String tareaId = UUID.randomUUID().toString();
+    String proyectoId = UUID.randomUUID().toString();
+
+    RecursoDTO recurso = new RecursoDTO();
+    recurso.setId(recursoId);
+
+    ProyectoDTO proyecto = new ProyectoDTO();
+    proyecto.setId(proyectoId);
+    proyecto.setNombre("Proyecto Test");
+
+    TareaDTO tarea = new TareaDTO();
+    tarea.setId(tareaId);
+    tarea.setProyectoId(proyectoId);
+
+    LocalDate fechaInicio = LocalDate.of(2023, 11, 10);
+    LocalDate fechaFin = LocalDate.of(2023, 11, 20);
+
+    // Cargas dentro del rango
+    CargaDeHoras cargaDentro1 = new CargaDeHoras(tareaId, recursoId, 8.0, "10/11/2023");
+    CargaDeHoras cargaDentro2 = new CargaDeHoras(tareaId, recursoId, 4.0, "15/11/2023");
+    CargaDeHoras cargaDentro3 = new CargaDeHoras(tareaId, recursoId, 6.0, "20/11/2023");
+
+    // Cargas fuera del rango
+    CargaDeHoras cargaFuera1 = new CargaDeHoras(tareaId, recursoId, 8.0, "09/11/2023");
+    CargaDeHoras cargaFuera2 = new CargaDeHoras(tareaId, recursoId, 4.0, "21/11/2023");
+
+    when(apiExternaService.getRecursos()).thenReturn(Arrays.asList(recurso));
+    when(apiExternaService.getTareas()).thenReturn(Arrays.asList(tarea));
+    when(apiExternaService.getProyectos()).thenReturn(Arrays.asList(proyecto));
+    when(cargaDeHorasRepository.findAll())
+        .thenReturn(
+            Arrays.asList(cargaDentro1, cargaDentro2, cargaDentro3, cargaFuera1, cargaFuera2));
+
+    List<CargaDeHorasPorRecursoDTO> resultado =
+        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, fechaInicio, fechaFin);
+
+    assertEquals(3, resultado.size());
+    assertTrue(resultado.stream().anyMatch(c -> c.getFechaCarga().equals("10/11/2023")));
+    assertTrue(resultado.stream().anyMatch(c -> c.getFechaCarga().equals("15/11/2023")));
+    assertTrue(resultado.stream().anyMatch(c -> c.getFechaCarga().equals("20/11/2023")));
   }
 }

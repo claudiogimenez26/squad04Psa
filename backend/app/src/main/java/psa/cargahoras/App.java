@@ -48,7 +48,7 @@ public class App {
   @GetMapping("/carga-de-horas")
   public ResponseEntity<List<CargaDeHoras>> obtenerCargasDeHoras() {
     try {
-      List<CargaDeHoras> cargas = cargaDeHorasService.obtenerTodasLasCargasDeHoras();
+      List<CargaDeHoras> cargas = cargaDeHorasService.obtenerCargasDeHoras();
       return new ResponseEntity<>(cargas, HttpStatus.OK);
     } catch (Exception e) {
       return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -70,18 +70,10 @@ public class App {
   }
 
   @GetMapping("/carga-de-horas/{recursoId}")
-  public ResponseEntity<?> obtenerCargasDeHorasPorRecurso(
-      @PathVariable String recursoId, @RequestParam(required = false) String fecha) {
+  public ResponseEntity<?> obtenerCargasDeHorasPorRecurso(@PathVariable String recursoId) {
     try {
-      LocalDate fechaBusqueda = null;
-
-      if (fecha != null) {
-        String decodedFecha = URLDecoder.decode(fecha, StandardCharsets.UTF_8.toString());
-        fechaBusqueda = LocalDate.from(CargaDeHoras.formatterFecha.parse(decodedFecha));
-      }
-
       List<CargaDeHorasPorRecursoDTO> cargasDeRecurso =
-          cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, fechaBusqueda);
+          cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, null, null);
       return new ResponseEntity<>(cargasDeRecurso, HttpStatus.OK);
     } catch (IllegalArgumentException e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -124,12 +116,16 @@ public class App {
     }
   }
 
-  @GetMapping("/costos/recursos/{recursoId}")
+  @GetMapping("/proyectos/{proyectoId}/recursos")
   public ResponseEntity<?> obtenerCostosPorRecurso(
-      @PathVariable String recursoId, @RequestParam(required = false) String fecha) {
+      @PathVariable String proyectoId,
+      @RequestParam(required = true) String fechaInicio,
+      @RequestParam(required = true) String fechaFin) {
     try {
-      CostoRecursoDTO costoPorRecurso = recursoService.obtenerCostoPorRecurso(recursoId);
-      return new ResponseEntity<>(costoPorRecurso, HttpStatus.OK);
+      List<CostoRecursoDTO> costosPorRecursoDeProyecto =
+          recursoService.obtenerCostosPorRecursoPorProyecto(
+              proyectoId, extraerFecha(fechaInicio), extraerFecha(fechaFin));
+      return new ResponseEntity<>(costosPorRecursoDeProyecto, HttpStatus.OK);
     } catch (IllegalArgumentException e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     } catch (Exception e) {
@@ -165,6 +161,19 @@ public class App {
         request.get("recursoId").toString(),
         cantidadHoras,
         request.get("fechaCarga").toString());
+  }
+
+  private LocalDate extraerFecha(String fechaStr) {
+    if (fechaStr != null) {
+      try {
+        String decodedFecha = URLDecoder.decode(fechaStr, StandardCharsets.UTF_8.toString());
+        return LocalDate.from(CargaDeHoras.formatterFecha.parse(decodedFecha));
+      } catch (Exception e) {
+        return null;
+      }
+    } else {
+      return null;
+    }
   }
 
   @GetMapping("/recursos")
