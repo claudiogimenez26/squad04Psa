@@ -1,6 +1,5 @@
 package psa.cargahoras.service;
 
-import java.time.LocalDate;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import psa.cargahoras.dto.CargaDeHorasPorRecursoDTO;
@@ -41,7 +40,7 @@ public class RecursoService {
             .orElse(null);
 
     List<CargaDeHorasPorRecursoDTO> cargasDeHoras =
-        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, LocalDate.now());
+        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, null);
 
     List<Double> horasCargadas =
         cargasDeHoras.stream().map(carga -> carga.getCantidadHoras()).toList();

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import psa.cargahoras.dto.CargaDeHorasPorRecursoDTO;
+import psa.cargahoras.dto.CostoRecursoDTO;
 import psa.cargahoras.dto.ProyectoDTO;
 import psa.cargahoras.dto.RecursoDTO;
 import psa.cargahoras.dto.RolDTO;
@@ -29,6 +30,7 @@ import psa.cargahoras.dto.TareaDTO;
 import psa.cargahoras.entity.CargaDeHoras;
 import psa.cargahoras.service.ApiExternaService;
 import psa.cargahoras.service.CargaDeHorasService;
+import psa.cargahoras.service.RecursoService;
 
 @SpringBootApplication
 @RestController
@@ -40,6 +42,8 @@ public class App {
   @Autowired private CargaDeHorasService cargaDeHorasService;
 
   @Autowired private ApiExternaService apiExternaService;
+
+  @Autowired private RecursoService recursoService;
 
   @GetMapping("/carga-de-horas")
   public ResponseEntity<List<CargaDeHoras>> obtenerCargasDeHoras() {
@@ -79,6 +83,8 @@ public class App {
       List<CargaDeHorasPorRecursoDTO> cargasDeRecurso =
           cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, fechaBusqueda);
       return new ResponseEntity<>(cargasDeRecurso, HttpStatus.OK);
+    } catch (IllegalArgumentException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     } catch (Exception e) {
       return new ResponseEntity<>(
           "Error al obtener recursos con proyectos: " + e.getMessage(),
@@ -110,6 +116,20 @@ public class App {
     try {
       cargaDeHorasService.eliminarCargaDeHoras(cargaDeHorasId);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (IllegalArgumentException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    } catch (Exception e) {
+      return new ResponseEntity<>(
+          "Error interno del servidor: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @GetMapping("/costos/recursos/{recursoId}")
+  public ResponseEntity<?> obtenerCostosPorRecurso(
+      @PathVariable String recursoId, @RequestParam(required = false) String fecha) {
+    try {
+      CostoRecursoDTO costoPorRecurso = recursoService.obtenerCostoPorRecurso(recursoId);
+      return new ResponseEntity<>(costoPorRecurso, HttpStatus.OK);
     } catch (IllegalArgumentException e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     } catch (Exception e) {

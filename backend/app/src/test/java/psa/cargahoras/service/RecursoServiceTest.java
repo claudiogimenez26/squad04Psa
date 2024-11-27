@@ -56,10 +56,10 @@ public class RecursoServiceTest {
         new CargaDeHorasService(cargaDeHorasRepository, apiExternaService);
 
     List<CargaDeHorasPorRecursoDTO> cargaPorRecurso1 =
-        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId1, LocalDate.now());
+        cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId1, null);
 
     when(apiExternaService.getRoles()).thenReturn(Arrays.asList(rol1));
-    when(mockCargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId1, LocalDate.now()))
+    when(mockCargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId1, null))
         .thenReturn(cargaPorRecurso1);
 
     CostoRecursoDTO costoRecurso1 = recursoService.obtenerCostoPorRecurso(recursoId1);
@@ -115,9 +115,9 @@ public class RecursoServiceTest {
         cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId2, LocalDate.now());
 
     when(apiExternaService.getRoles()).thenReturn(Arrays.asList(rol1, rol2));
-    when(mockCargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId1, LocalDate.now()))
+    when(mockCargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId1, null))
         .thenReturn(cargaPorRecurso1);
-    when(mockCargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId2, LocalDate.now()))
+    when(mockCargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId2, null))
         .thenReturn(cargaPorRecurso2);
 
     List<CostoRecursoDTO> costosPorRecurso = recursoService.obtenerCostosDeTodosLosRecursos();
