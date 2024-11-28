@@ -23,7 +23,6 @@ import psa.cargahoras.service.RecursoService;
 public class ConsultaDeCostoRecursoSteps {
 
   private final RecursoCommonSteps recursoCommonSteps;
-  // private final ROLCommonSteps rolCommonSteps;
   private final ResultadoOperacionCommonSteps resultadoOperacionCommonSteps;
   private final TestContext testContext;
 
@@ -41,10 +40,8 @@ public class ConsultaDeCostoRecursoSteps {
   public ConsultaDeCostoRecursoSteps(
       ResultadoOperacionCommonSteps resultadoOperacionCommonSteps,
       RecursoCommonSteps recursoCommonSteps,
-      /*ROLCommonSteps rolCommonSteps,*/
       TestContext testContext) {
     this.recursoCommonSteps = recursoCommonSteps;
-    // this.rolCommonSteps = rolCommonSteps;
     this.resultadoOperacionCommonSteps = resultadoOperacionCommonSteps;
     this.testContext = testContext;
   }

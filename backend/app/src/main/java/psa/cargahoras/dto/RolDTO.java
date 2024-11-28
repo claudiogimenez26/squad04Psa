@@ -5,7 +5,6 @@ public class RolDTO {
   private String id;
   private String nombre;
   private String experiencia;
-  private double costo;
 
   private double definirCosto() {
     return switch (String.join(" ", nombre, experiencia)) {
@@ -46,9 +45,5 @@ public class RolDTO {
 
   public double getCosto() {
     return definirCosto();
-  }
-
-  public void setCosto(Integer costo) {
-    this.costo = costo;
   }
 }
