@@ -26,8 +26,6 @@ export default async function ({
   }
 
   const url = `${process.env.BACKEND_URL}/carga-de-horas/${recursoId}?fecha=${fecha}`;
-  console.log(url);
-
   const res = await fetch(url);
 
   let cargas: CargaDeHoras[] = [];

@@ -33,3 +33,16 @@ export type CargaDeHoras = {
   fechaCarga: string;
   nombreProyecto: string;
 };
+
+export type CostosDeRecursosPorProyecto = {
+  [recursoId: string]: {
+    recursoId: string;
+    rolId: string;
+    costo: number;
+    nombreRecurso: string;
+    nombreRol: string;
+    horasTrabajadas: number;
+    costoRol: number;
+    mes: string;
+  }[];
+};

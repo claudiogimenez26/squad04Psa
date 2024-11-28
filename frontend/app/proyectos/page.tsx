@@ -1,30 +1,16 @@
-"use client";
+import { encodearFecha } from "@/_lib/fecha";
+import { redirect } from "next/navigation";
 
-import { Datepicker } from "flowbite-react";
-import { useState } from "react";
+export default async function () {
+  const res = await fetch(`${process.env.BACKEND_URL}/proyectos`);
+  const proyectos = await res.json();
 
-export default function () {
-  const [fechaInicio, setFechaInicio] = useState<Date>(new Date());
-  const [fechaFin, setFechaFin] = useState<Date>(new Date());
+  const fechaFin = encodearFecha(new Date());
+  const unAnioAtras = new Date();
+  unAnioAtras.setFullYear(unAnioAtras.getFullYear() - 1);
+  const fechaInicio = encodearFecha(unAnioAtras);
 
-  return (
-    <div className="flex justify-center items-center gap-4">
-      <span>Desde el</span>
-      <Datepicker
-        className="w-80"
-        language="es-AR"
-        labelTodayButton="Hoy"
-        labelClearButton="Limpiar"
-        maxDate={new Date()}
-      />
-      <span>hasta el</span>
-      <Datepicker
-        className="w-80"
-        language="es-AR"
-        labelTodayButton="Hoy"
-        labelClearButton="Limpiar"
-        maxDate={new Date()}
-      />
-    </div>
+  redirect(
+    `/proyectos/${proyectos[0].id}?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`
   );
 }
