@@ -70,10 +70,11 @@ public class App {
   }
 
   @GetMapping("/carga-de-horas/{recursoId}")
-  public ResponseEntity<?> obtenerCargasDeHorasPorRecurso(@PathVariable String recursoId) {
+  public ResponseEntity<?> obtenerCargasDeHorasPorRecurso(
+      @PathVariable String recursoId, @RequestParam(required = false) String fecha) {
     try {
       List<CargaDeHorasPorRecursoDTO> cargasDeRecurso =
-          cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, null, null);
+          cargaDeHorasService.obtenerCargasDeHorasPorRecurso(recursoId, extraerFecha(fecha), null);
       return new ResponseEntity<>(cargasDeRecurso, HttpStatus.OK);
     } catch (IllegalArgumentException e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);

@@ -1,25 +1,17 @@
 "use client";
 
-import { Proyecto, Recurso } from "@/_lib/tipos";
+import { Proyecto } from "@/_lib/tipos";
 import { Datepicker, Label, Select } from "flowbite-react";
 import { useState } from "react";
 
-export default function FormularioConsultaCostos({
-  proyectos,
-  recursos
-}: {
-  proyectos: Proyecto[];
-  recursos: Recurso[];
-}) {
-  const [proyectoActual, setProyectoActual] = useState(proyectos[0]);
-
-  const [fechaFin, setFechaFin] = useState<Date>(new Date());
-
+export default function Formulario({ proyectos }: { proyectos: Proyecto[] }) {
   const [fechaInicio, setFechaInicio] = useState<Date>(() => {
     const fechaInicio = new Date(fechaFin);
     fechaInicio.setDate(fechaInicio.getDate() - 7);
     return fechaInicio;
   });
+
+  const [fechaFin, setFechaFin] = useState<Date>(new Date());
 
   function handleCambioFechaFin(fecha: Date) {
     setFechaFin(fecha);

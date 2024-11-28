@@ -34,8 +34,8 @@ export default async function RootLayout({
               <span className="self-center text-xl font-semibold">PSA</span>
             </NavbarBrand>
             <NavbarCollapse>
-              <NavbarLink href="/recursos">Cargas de recursos</NavbarLink>
-              <NavbarLink href="/proyectos">Costos por proyectos</NavbarLink>
+              <NavbarLink href="/recursos">Horas por recurso</NavbarLink>
+              <NavbarLink href="/proyectos">Costos por proyecto</NavbarLink>
               <NavbarLink href="/carga-de-horas">Cargar horas</NavbarLink>
               <NavbarLink href="/">
                 <IndicadorRecursoActual />

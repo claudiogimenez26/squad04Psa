@@ -2,12 +2,14 @@ package psa.cargahoras.service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import psa.cargahoras.dto.CargaDeHorasPorRecursoDTO;
 import psa.cargahoras.dto.CostoRecursoDTO;
 import psa.cargahoras.dto.RecursoDTO;
 import psa.cargahoras.dto.RolDTO;
-import psa.cargahoras.dto.TareaDTO;
+import psa.cargahoras.entity.CargaDeHoras;
 
 @Service
 public class RecursoService {
@@ -63,34 +65,38 @@ public class RecursoService {
 
   public List<CostoRecursoDTO> obtenerCostosPorRecursoPorProyecto(
       String proyectoId, LocalDate fechaInicio, LocalDate fechaFin) {
-    List<TareaDTO> tareas = apiExternaService.getTareas();
-    List<TareaDTO> tareasDelProyecto =
-        tareas.stream().filter(t -> t.getProyectoId().equals(proyectoId)).toList();
+    List<CargaDeHoras> cargasDelProyecto =
+        cargaDeHorasService.obtenerCargasDeHorasPorProyecto(proyectoId);
 
     List<RecursoDTO> recursos = apiExternaService.getRecursos();
+    List<RolDTO> roles = apiExternaService.getRoles();
 
-    return tareasDelProyecto.stream()
+    Map<String, RecursoDTO> recursosMap =
+        recursos.stream().collect(Collectors.toMap(RecursoDTO::getId, r -> r));
+
+    Map<String, RolDTO> rolesMap = roles.stream().collect(Collectors.toMap(RolDTO::getId, r -> r));
+
+    Map<String, List<CargaDeHoras>> cargasPorRecurso =
+        cargasDelProyecto.stream().collect(Collectors.groupingBy(CargaDeHoras::getRecursoId));
+
+    return cargasPorRecurso.entrySet().stream()
         .map(
-            t -> {
-              RecursoDTO recurso =
-                  recursos.stream()
-                      .filter(r -> r.getId().equals(t.getRecursoId()))
-                      .findFirst()
-                      .orElseThrow();
+            entry -> {
+              String recursoId = entry.getKey();
+              List<CargaDeHoras> cargasDelRecurso = entry.getValue();
 
-              RolDTO rolRecurso =
-                  apiExternaService.getRoles().stream()
-                      .filter(rol -> rol.getId().equals(recurso.getRolId()))
-                      .findFirst()
-                      .orElseThrow();
-
-              List<CargaDeHorasPorRecursoDTO> cargasDelRecurso =
-                  cargaDeHorasService.obtenerCargasDeHorasPorRecurso(
-                      recurso.getId(), fechaInicio, fechaFin);
+              RecursoDTO recurso = recursosMap.get(recursoId);
+              RolDTO rolRecurso = rolesMap.get(recurso.getRolId());
 
               double costoTotal =
                   cargasDelRecurso.stream()
-                          .mapToDouble(CargaDeHorasPorRecursoDTO::getCantidadHoras)
+                          .filter(
+                              carga -> {
+                                LocalDate fechaCarga = carga.getFechaCarga();
+                                return ((fechaInicio == null || !fechaCarga.isBefore(fechaInicio))
+                                    && (fechaFin == null || !fechaCarga.isAfter(fechaFin)));
+                              })
+                          .mapToDouble(CargaDeHoras::getCantidadHoras)
                           .sum()
                       * rolRecurso.getCosto();
 

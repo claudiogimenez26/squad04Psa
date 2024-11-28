@@ -6,7 +6,7 @@ export default async function ({ children }: { children: React.ReactElement }) {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-4xl font-bold">Consultar cargas por recurso</h1>
+      <h1 className="text-4xl font-bold">Horas por recurso</h1>
       <Formulario recursos={recursos}>{children}</Formulario>
     </div>
   );

@@ -233,9 +233,7 @@ export default function Formulario({
           </div>
 
           <div className="col-span-1">
-            <Label htmlFor="cantidadHoras">
-              Seleccione la fecha de la carga
-            </Label>
+            <Label htmlFor="cantidadHoras">Ingrese la cantidad de horas</Label>
             <Controller
               name="cantidadHoras"
               control={control}

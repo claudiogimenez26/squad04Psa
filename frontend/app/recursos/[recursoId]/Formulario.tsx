@@ -60,10 +60,7 @@ export default function Formulario({
           </Select>
         </div>
         <div className="space-y-2">
-          <Label
-            htmlFor="recursoId"
-            value="Seleccion una fecha de una semana"
-          />
+          <Label htmlFor="fechaCarga" value="Seleccion una fecha" />
           <Datepicker
             id="fechaCarga"
             className="w-80"
@@ -75,6 +72,12 @@ export default function Formulario({
             onChange={(f) => setFecha(f)}
           />
         </div>
+      </div>
+      <div>
+        <span>
+          Visualizando horas cargas en la semana del{" "}
+          {fecha?.toLocaleDateString("es-AR")}
+        </span>
       </div>
       {children}
     </>
