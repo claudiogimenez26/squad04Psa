@@ -35,12 +35,10 @@ export default function Formulario({
     }
   });
 
-  // Observar cambios en los campos
   const fechaInicio = watch("fechaInicio");
   const fechaFin = watch("fechaFin");
   const proyectoId = watch("proyectoId");
 
-  // Efecto para manejar la navegación
   useEffect(() => {
     if (proyectoId && fechaInicio && fechaFin) {
       router.push(
@@ -49,12 +47,11 @@ export default function Formulario({
     }
   }, [proyectoId, fechaInicio, fechaFin, router]);
 
-  // Manejar cambio de fecha fin
   const handleCambioFechaFin = (fecha: Date) => {
     if (fechaInicio > fecha) {
       setValue("fechaInicio", fecha);
     }
-    setValue("fechaFin", fecha);
+    setValue("fechaFin", fecha, { shouldDirty: true });
   };
 
   return (
@@ -106,7 +103,10 @@ export default function Formulario({
                 labelTodayButton="Hoy"
                 labelClearButton="Limpiar"
                 maxDate={new Date()}
-                onChange={(fecha) => handleCambioFechaFin(fecha as Date)}
+                onChange={(fecha) => {
+                  field.onChange(fecha);
+                  handleCambioFechaFin(fecha as Date);
+                }}
               />
             )}
           />

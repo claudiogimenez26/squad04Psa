@@ -26,29 +26,48 @@ export default async function ({
   const url = `${process.env.BACKEND_URL}/proyectos/${proyectoId}/recursos?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
   const res = await fetch(url);
 
-  let costosPorProyecto: CostosDeRecursosPorProyecto | null = null;
+  let costosPorRecurso: CostosDeRecursosPorProyecto[] = [];
 
   try {
-    costosPorProyecto = await res.json();
+    costosPorRecurso = await res.json();
   } catch (e) {
     console.error(e);
   }
 
-  if (!costosPorProyecto) {
+  if (!costosPorRecurso) {
     return null;
   }
 
+  if (costosPorRecurso.length === 0) {
+    return <div>Proyecto no tiene horas cargas en este rango de fechas</div>;
+  }
+
   return (
-    <div>
-      {Object.keys(costosPorProyecto).map((recursoId) => (
-        <div key={recursoId}>
-          {costosPorProyecto[recursoId].map((mes) => (
-            <div key={`${recursoId}-${mes.mes}`}>
-              <p>Recurso: {mes.nombreRecurso}</p>
-              <p>Rol: {mes.nombreRol}</p>
-              <p>Horas: {mes.horasTrabajadas}</p>
-            </div>
-          ))}
+    <div className="space-y-6">
+      {costosPorRecurso.map((r) => (
+        <div key={r.id} className="space-y-3">
+          <h2 className="text-xl font-semibold">{r.nombre}</h2>
+          <div className="space-y-1">
+            <p>
+              {r.rol} (Costo p/hora: {r.costoRol})
+            </p>
+            <p>
+              Costo total en el período:{" "}
+              {r.costos.reduce((acc, curr) => acc + curr.cantidadHoras, 0) *
+                r.costoRol}
+            </p>
+          </div>
+          <ul key={r.id} className="space-y-4">
+            {r.costos.map((mes) => (
+              <li
+                key={`${r.id}-${mes.mes}`}
+                className="p-4 border rounded-lg border-gray-300"
+              >
+                <p>Mes: {mes.mes[0].toUpperCase() + mes.mes.slice(1)}</p>
+                <p>Horas: {mes.cantidadHoras}</p>
+              </li>
+            ))}
+          </ul>
         </div>
       ))}
     </div>
