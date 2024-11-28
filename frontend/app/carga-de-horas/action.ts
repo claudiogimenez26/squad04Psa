@@ -18,7 +18,9 @@ export async function cargarHoras(formData: FormData) {
     });
 
     if (!res.ok) {
-      throw new Error(await res.text());
+      const text = await res.text();
+      console.error(text);
+      throw new Error(text);
     }
 
     const cargaDeHoras: CargaDeHoras = await res.json();
