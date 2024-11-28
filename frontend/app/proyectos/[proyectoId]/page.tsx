@@ -43,7 +43,7 @@ export default async function ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-12">
       {costosPorRecurso.map((r) => (
         <div key={r.id} className="space-y-3">
           <h2 className="text-xl font-semibold">{r.nombre}</h2>
@@ -57,7 +57,7 @@ export default async function ({
                 r.costoRol}
             </p>
           </div>
-          <ul key={r.id} className="space-y-4">
+          <ul key={r.id} className="grid grid-cols-3 gap-4">
             {r.costos.map((mes) => (
               <li
                 key={`${r.id}-${mes.mes}`}
