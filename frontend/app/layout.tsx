@@ -11,6 +11,8 @@ import {
 import { Inter } from "next/font/google";
 import IndicadorRecursoActual from "./IndicadorRecursoActual";
 
+export const dynamic = "force-dynamic";
+
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
