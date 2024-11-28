@@ -8,13 +8,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import psa.cargahoras.dto.CostoProyectoDTO;
 import psa.cargahoras.dto.CostoRecursoDTO;
 import psa.cargahoras.dto.ProyectoDTO;
@@ -25,9 +23,9 @@ import psa.cargahoras.repository.CargaDeHorasRepository;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProyectoServiceTest {
-  
+
   @Mock private ApiExternaService apiExternaService;
-  
+
   @Mock private CargaDeHorasRepository cargaDeHorasRepository;
 
   @Mock private CargaDeHorasService mockCargaDeHorasService;
@@ -74,24 +72,27 @@ public class ProyectoServiceTest {
     CargaDeHorasService cargaDeHorasService =
         new CargaDeHorasService(cargaDeHorasRepository, apiExternaService);
 
-    List<CargaDeHoras> cargasPorProyecto = 
+    List<CargaDeHoras> cargasPorProyecto =
         cargaDeHorasService.obtenerCargasDeHorasPorProyecto(proyectoId);
 
-    when(mockCargaDeHorasService.obtenerCargasDeHorasPorProyecto(proyectoId)).thenReturn(cargasPorProyecto);
+    when(mockCargaDeHorasService.obtenerCargasDeHorasPorProyecto(proyectoId))
+        .thenReturn(cargasPorProyecto);
 
-    CostoRecursoDTO costoRecurso1 = new CostoRecursoDTO(
-      recurso1.getId(), 
-      rolId, 
-      300, 
-      String.join(" ", recurso1.getNombre(), recurso1.getApellido()), 
-      "Desarrollador Senior");
+    CostoRecursoDTO costoRecurso1 =
+        new CostoRecursoDTO(
+            recurso1.getId(),
+            rolId,
+            300,
+            String.join(" ", recurso1.getNombre(), recurso1.getApellido()),
+            "Desarrollador Senior");
 
-    CostoRecursoDTO costoRecurso2 = new CostoRecursoDTO(
-      recurso2.getId(), 
-      rolId, 
-      240, 
-      String.join(" ", recurso2.getNombre(), recurso2.getApellido()), 
-      "Desarrollador Senior");
+    CostoRecursoDTO costoRecurso2 =
+        new CostoRecursoDTO(
+            recurso2.getId(),
+            rolId,
+            240,
+            String.join(" ", recurso2.getNombre(), recurso2.getApellido()),
+            "Desarrollador Senior");
 
     when(recursoService.obtenerCostosDeTodosLosRecursos(cargasPorProyecto))
         .thenReturn(Arrays.asList(costoRecurso1, costoRecurso2));
@@ -141,13 +142,19 @@ public class ProyectoServiceTest {
     recurso2.setNombre("ADrián");
     recurso2.setApellido("Guerra");
 
-    CargaDeHoras cargaDeHoras1Proyecto1 = new CargaDeHoras(tareaId1, recursoId1, 10.0, "26/11/2024");
+    CargaDeHoras cargaDeHoras1Proyecto1 =
+        new CargaDeHoras(tareaId1, recursoId1, 10.0, "26/11/2024");
     CargaDeHoras cargaDeHoras1Proyecto2 = new CargaDeHoras(tareaId2, recursoId2, 8.0, "27/11/2024");
     CargaDeHoras cargaDeHoras2Proyecto1 = new CargaDeHoras(tareaId1, recursoId1, 6.0, "26/11/2024");
     CargaDeHoras cargaDeHoras2Proyecto2 = new CargaDeHoras(tareaId2, recursoId2, 8.0, "27/11/2024");
 
     List<CargaDeHoras> cargasdeHoras = new ArrayList<CargaDeHoras>();
-    cargasdeHoras.addAll(Arrays.asList(cargaDeHoras1Proyecto1, cargaDeHoras2Proyecto1, cargaDeHoras1Proyecto2, cargaDeHoras2Proyecto2));
+    cargasdeHoras.addAll(
+        Arrays.asList(
+            cargaDeHoras1Proyecto1,
+            cargaDeHoras2Proyecto1,
+            cargaDeHoras1Proyecto2,
+            cargaDeHoras2Proyecto2));
 
     when(apiExternaService.getProyectos()).thenReturn(Arrays.asList(proyecto1, proyecto2));
     when((apiExternaService.getTareas())).thenReturn(Arrays.asList(tarea1, tarea2));
@@ -156,31 +163,35 @@ public class ProyectoServiceTest {
     CargaDeHorasService cargaDeHorasService =
         new CargaDeHorasService(cargaDeHorasRepository, apiExternaService);
 
-    List<CargaDeHoras> cargasPorProyecto1 = 
+    List<CargaDeHoras> cargasPorProyecto1 =
         cargaDeHorasService.obtenerCargasDeHorasPorProyecto(proyectoId1);
-        List<CargaDeHoras> cargasPorProyecto2 = 
+    List<CargaDeHoras> cargasPorProyecto2 =
         cargaDeHorasService.obtenerCargasDeHorasPorProyecto(proyectoId2);
 
-    when(mockCargaDeHorasService.obtenerCargasDeHorasPorProyecto(proyectoId1)).thenReturn(cargasPorProyecto1);
-    when(mockCargaDeHorasService.obtenerCargasDeHorasPorProyecto(proyectoId2)).thenReturn(cargasPorProyecto2);
+    when(mockCargaDeHorasService.obtenerCargasDeHorasPorProyecto(proyectoId1))
+        .thenReturn(cargasPorProyecto1);
+    when(mockCargaDeHorasService.obtenerCargasDeHorasPorProyecto(proyectoId2))
+        .thenReturn(cargasPorProyecto2);
 
-    CostoRecursoDTO costoRecurso1 = new CostoRecursoDTO(
-      recurso1.getId(), 
-      rolId, 
-      480, 
-      String.join(" ", recurso1.getNombre(), recurso1.getApellido()), 
-      "Desarrollador Senior");
+    CostoRecursoDTO costoRecurso1 =
+        new CostoRecursoDTO(
+            recurso1.getId(),
+            rolId,
+            480,
+            String.join(" ", recurso1.getNombre(), recurso1.getApellido()),
+            "Desarrollador Senior");
 
-    CostoRecursoDTO costoRecurso2 = new CostoRecursoDTO(
-      recurso2.getId(), 
-      rolId, 
-      4800, 
-      String.join(" ", recurso2.getNombre(), recurso2.getApellido()), 
-      "Desarrollador Senior");
+    CostoRecursoDTO costoRecurso2 =
+        new CostoRecursoDTO(
+            recurso2.getId(),
+            rolId,
+            4800,
+            String.join(" ", recurso2.getNombre(), recurso2.getApellido()),
+            "Desarrollador Senior");
 
     when(recursoService.obtenerCostosDeTodosLosRecursos(cargasPorProyecto1))
         .thenReturn(Arrays.asList(costoRecurso1));
-        when(recursoService.obtenerCostosDeTodosLosRecursos(cargasPorProyecto2))
+    when(recursoService.obtenerCostosDeTodosLosRecursos(cargasPorProyecto2))
         .thenReturn(Arrays.asList(costoRecurso2));
 
     List<CostoProyectoDTO> costoProyecto = proyectoService.obetenerCostosDeTodosLosProyectos();
@@ -205,6 +216,6 @@ public class ProyectoServiceTest {
             IllegalArgumentException.class,
             () -> proyectoService.obtenerCostoPorProyecto(proyectoInexistenteId));
 
-    assertEquals("No existe el proyecto con ID: " + proyectoInexistenteId, e.getMessage());    
+    assertEquals("No existe el proyecto con ID: " + proyectoInexistenteId, e.getMessage());
   }
 }

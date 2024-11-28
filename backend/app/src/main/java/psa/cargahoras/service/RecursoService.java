@@ -23,30 +23,27 @@ public class RecursoService {
   private final CargaDeHorasService cargaDeHorasService;
 
   private RecursoDTO obtenerRecurso(String recursoId) {
-    return
-        apiExternaService.getRecursos().stream()
-            .filter(recurso -> recurso.getId().equals(recursoId))
-            .findFirst()
-            .orElseThrow(
-                () -> new IllegalArgumentException("No existe el recurso con ID: " + recursoId));
+    return apiExternaService.getRecursos().stream()
+        .filter(recurso -> recurso.getId().equals(recursoId))
+        .findFirst()
+        .orElseThrow(
+            () -> new IllegalArgumentException("No existe el recurso con ID: " + recursoId));
   }
 
   private RolDTO obtenerRol(String rolId) {
-    return 
-        apiExternaService.getRoles().stream()
-          .filter(rol -> rol.getId().equals(rolId))
-          .findFirst()
-          .orElse(null);
+    return apiExternaService.getRoles().stream()
+        .filter(rol -> rol.getId().equals(rolId))
+        .findFirst()
+        .orElse(null);
   }
 
   private CostoRecursoDTO obtenerCosto(List<Double> horasCargadas, RecursoDTO recurso, RolDTO rol) {
-    Double costoRecurso =
-        horasCargadas.stream().mapToDouble(hora -> rol.getCosto() * hora).sum();
+    Double costoRecurso = horasCargadas.stream().mapToDouble(hora -> rol.getCosto() * hora).sum();
 
     return new CostoRecursoDTO(
         recurso.getId(),
         rol.getId(),
-        costoRecurso.intValue(),
+        costoRecurso,
         String.join(" ", recurso.getNombre(), recurso.getApellido()),
         String.join(" ", rol.getNombre(), rol.getExperiencia()));
   }
@@ -62,6 +59,13 @@ public class RecursoService {
 
     return recursos.stream()
         .map(recurso -> obtenerCostoPorRecurso(recurso.getId(), null, null))
+        .toList();
+  }
+
+  public List<CostoRecursoDTO> obtenerCostosDeTodosLosRecursos(List<CargaDeHoras> cargasDeHoras) {
+    List<RecursoDTO> recursos = apiExternaService.getRecursos();
+    return recursos.stream()
+        .map(recurso -> obtenerCostoPorRecurso(recurso.getId(), cargasDeHoras))
         .toList();
   }
 
@@ -163,13 +167,13 @@ public class RecursoService {
             })
         .filter(resumen -> resumen != null)
         .collect(Collectors.toList());
-    return obtenerCosto(horasCargadas, recursoBuscado, rolRecurso);
   }
 
-  public CostoRecursoDTO obtenerCostoPorRecurso(String recursoId, List<CargaDeHoras> cargasDeHoras) {
+  public CostoRecursoDTO obtenerCostoPorRecurso(
+      String recursoId, List<CargaDeHoras> cargasDeHoras) {
     RecursoDTO recursoBuscado = obtenerRecurso(recursoId);
     RolDTO rolRecurso = obtenerRol(recursoBuscado.getRolId());
-    
+
     List<Double> horasCargadas =
         cargasDeHoras.stream().map(carga -> carga.getCantidadHoras()).toList();
 

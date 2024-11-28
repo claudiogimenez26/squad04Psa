@@ -4,19 +4,17 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.cucumber.java.Before;
+import io.cucumber.java.es.Cuando;
+import io.cucumber.java.es.Entonces;
+import io.cucumber.java.es.Y;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 // import java.util.Arrays;
 import java.util.List;
-
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import io.cucumber.java.Before;
-import io.cucumber.java.es.Cuando;
-import io.cucumber.java.es.Entonces;
-import io.cucumber.java.es.Y;
 import psa.cargahoras.dto.CostoProyectoDTO;
 import psa.cargahoras.dto.TareaDTO;
 import psa.cargahoras.entity.CargaDeHoras;
@@ -64,16 +62,20 @@ public class ConsultaCostoProyectoSteps {
     cargasDeHoras = new ArrayList<>();
     cargaDeHorasService =
         new CargaDeHorasService(cargaDeHorasRepository, testContext.getApiExternaService());
-    recursoService = 
-        new RecursoService(testContext.getApiExternaService(), cargaDeHorasService);
-    proyectoService = 
-        new ProyectoService(testContext.getApiExternaService(), cargaDeHorasService, recursoService);
+    recursoService = new RecursoService(testContext.getApiExternaService(), cargaDeHorasService);
+    proyectoService =
+        new ProyectoService(
+            testContext.getApiExternaService(), cargaDeHorasService, recursoService);
   }
 
   @Y(
       "una carga de horas con id {string}, con tarea con id {string}, cargada por el recurso con id {string} con {double} horas cargadas y fecha {string}")
   public void dadaUnaCargaDeHorasConTarea(
-      String cargaDeHorasId, String tareaId, String recursoId, double cantidadHoras, String fechaHoraDeCarga) {
+      String cargaDeHorasId,
+      String tareaId,
+      String recursoId,
+      double cantidadHoras,
+      String fechaHoraDeCarga) {
     String proyectoId = proyectoCommonSteps.getProyecto().getId();
     TareaDTO tarea = mock(TareaDTO.class);
 
@@ -92,20 +94,19 @@ public class ConsultaCostoProyectoSteps {
     cargasDeHoras.add(cargaDeHoras);
     when(cargaDeHorasRepository.findAll()).thenReturn(cargasDeHoras);
     when(apiExternaService.getTareas()).thenReturn(Arrays.asList(tarea));
-}
+  }
 
   @Cuando("consulto el costo del proyecto")
   public void consultarCostoProyecto() {
-    
-    costoProyecto = 
+
+    costoProyecto =
         resultadoOperacionCommonSteps.ejecutar(
-          () -> 
-              proyectoService.obtenerCostoPorProyecto(
-                  proyectoCommonSteps.getProyecto().getId()));
+            () ->
+                proyectoService.obtenerCostoPorProyecto(proyectoCommonSteps.getProyecto().getId()));
   }
 
   @Entonces("el costo del proyecto debe ser {int}")
   public void verificarCostoProyecto(int costoProyectoEsperado) {
-      assertEquals(costoProyectoEsperado, costoProyecto.getCosto(), 0.1);
+    assertEquals(costoProyectoEsperado, costoProyecto.getCosto(), 0.1);
   }
 }

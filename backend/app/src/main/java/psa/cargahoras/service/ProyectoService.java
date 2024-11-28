@@ -2,7 +2,6 @@ package psa.cargahoras.service;
 
 import java.util.List;
 import java.util.UUID;
-
 import psa.cargahoras.dto.CostoProyectoDTO;
 import psa.cargahoras.dto.CostoRecursoDTO;
 import psa.cargahoras.dto.ProyectoDTO;
@@ -15,7 +14,7 @@ public class ProyectoService {
   private final RecursoService recursoService;
 
   public ProyectoService(
-      ApiExternaService apiExternaService, 
+      ApiExternaService apiExternaService,
       CargaDeHorasService cargaDeHorasService,
       RecursoService recursoService) {
     this.apiExternaService = apiExternaService;
@@ -24,30 +23,28 @@ public class ProyectoService {
   }
 
   public CostoProyectoDTO obtenerCostoPorProyecto(String proyectoId) {
-    ProyectoDTO proyectoBuscado = 
+    ProyectoDTO proyectoBuscado =
         apiExternaService.getProyectos().stream()
             .filter(proyecto -> proyecto.getId().equals(proyectoId))
             .findFirst()
             .orElseThrow(
-              () -> new IllegalArgumentException("No existe el proyecto con ID: " + proyectoId)
-            );
+                () -> new IllegalArgumentException("No existe el proyecto con ID: " + proyectoId));
 
-    List<CargaDeHoras> cargasDeHoras = cargaDeHorasService.obtenerCargasDeHorasPorProyecto(proyectoId);
+    List<CargaDeHoras> cargasDeHoras =
+        cargaDeHorasService.obtenerCargasDeHorasPorProyecto(proyectoId);
 
-    List<CostoRecursoDTO> costosRecursos = recursoService.obtenerCostosDeTodosLosRecursos(cargasDeHoras);
-    
-    int costoProyecto = costosRecursos.stream().mapToInt(costoRecurso -> costoRecurso.getCosto()).sum();
-    
+    List<CostoRecursoDTO> costosRecursos =
+        recursoService.obtenerCostosDeTodosLosRecursos(cargasDeHoras);
+
+    double costoProyecto =
+        costosRecursos.stream().mapToDouble(costoRecurso -> costoRecurso.getCosto()).sum();
+
     return new CostoProyectoDTO(
-      UUID.randomUUID().toString(), 
-      proyectoId,
-      proyectoBuscado.getNombre(), 
-      costoProyecto);
+        UUID.randomUUID().toString(), proyectoId, proyectoBuscado.getNombre(), costoProyecto);
   }
 
   public List<CostoProyectoDTO> obetenerCostosDeTodosLosProyectos() {
     List<ProyectoDTO> proyectos = apiExternaService.getProyectos();
     return proyectos.stream().map(proyecto -> obtenerCostoPorProyecto(proyecto.getId())).toList();
   }
-        
 }

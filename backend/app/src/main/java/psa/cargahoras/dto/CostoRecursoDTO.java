@@ -14,6 +14,15 @@ public class CostoRecursoDTO {
   private YearMonth mes;
 
   public CostoRecursoDTO(
+      String id, String rolId, double costo, String nombreRecurso, String nombreRol) {
+    this.id = id;
+    this.rolId = rolId;
+    this.costo = costo;
+    this.nombreRecurso = nombreRecurso;
+    this.nombreRol = nombreRol;
+  }
+
+  public CostoRecursoDTO(
       String id,
       String rolId,
       double costo,

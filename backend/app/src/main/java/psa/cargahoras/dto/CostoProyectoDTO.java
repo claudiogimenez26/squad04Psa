@@ -1,10 +1,11 @@
 package psa.cargahoras.dto;
 
 public class CostoProyectoDTO {
-  private String id, proyectoId, nombreProyecto;
-  private int costo;
 
-  public CostoProyectoDTO(String id, String proyectoId, String nombreProyecto, int costo) {
+  private String id, proyectoId, nombreProyecto;
+  private double costo;
+
+  public CostoProyectoDTO(String id, String proyectoId, String nombreProyecto, double costo) {
     this.id = id;
     this.proyectoId = proyectoId;
     this.nombreProyecto = nombreProyecto;
@@ -35,7 +36,7 @@ public class CostoProyectoDTO {
     this.nombreProyecto = nombreProyecto;
   }
 
-  public Integer getCosto() {
+  public double getCosto() {
     return costo;
   }
 
