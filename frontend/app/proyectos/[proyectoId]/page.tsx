@@ -12,7 +12,7 @@ export default async function ({
     fecha = fecha[0];
   }
 
-  const url = `${process.env.BACKEND_URL}/proyectos/${proyectoId}/recursos?fecha=${fecha}`;
+  const url = `${process.env.BACKEND_URL}/proyectos/${proyectoId}/recursos?fechaInicio=${fecha}&fechaFin=${fecha}`;
 
   return <div></div>;
 }
