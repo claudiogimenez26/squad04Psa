@@ -1,7 +1,7 @@
 import "./globals.css";
 
 import RecursoActualContextProvider from "@/_context/recursoActualContext";
-import { Recurso } from "@/_lib/tipos";
+import { CargasDeHorasPorRecurso, Recurso } from "@/_lib/tipos";
 import {
   Navbar,
   NavbarBrand,
@@ -22,13 +22,15 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const res = await fetch(`${process.env.BACKEND_URL}/recursos`);
-  const recursos: Recurso[] = await res.json();
+  const [recursos, cargas] = (await Promise.all([
+    fetch(`${process.env.BACKEND_URL}/recursos`).then((res) => res.json()),
+    fetch(`${process.env.BACKEND_URL}/carga-de-horas`).then((res) => res.json())
+  ])) as [Recurso[], CargasDeHorasPorRecurso];
 
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans`}>
-        <RecursoActualContextProvider recursos={recursos}>
+        <RecursoActualContextProvider recursos={recursos} cargas={cargas}>
           <Navbar className="border-b">
             <NavbarBrand>
               <span className="self-center text-xl font-semibold">PSA</span>
