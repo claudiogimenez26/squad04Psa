@@ -450,4 +450,38 @@ public class CargaDeHorasServiceTest {
     assertTrue(resultado.stream().anyMatch(c -> c.getFechaCarga().equals("15/11/2023")));
     assertTrue(resultado.stream().anyMatch(c -> c.getFechaCarga().equals("20/11/2023")));
   }
+
+  @Test
+  public void modificarCargaDeHorasExistente() {
+    String cargaId = UUID.randomUUID().toString();
+    CargaDeHoras carga = new CargaDeHoras("tareaId", "recursoId", 8.0, "18/11/2024");
+    carga.setId(cargaId);
+
+    CargaDeHoras cargaModificada = new CargaDeHoras("tareaId", "recursoId", 10.0, "20/11/2024");
+    cargaModificada.setId(cargaId);
+
+    when(cargaDeHorasRepository.findById(cargaModificada.getId())).thenReturn(java.util.Optional.of(carga));
+
+    cargaDeHorasService.modificarCargaDeHoras(cargaModificada);
+
+    verify(cargaDeHorasRepository, times(1)).delete(carga);
+    verify(cargaDeHorasRepository, times(1)).save(cargaModificada);
+  }
+
+  @Test
+  public void modificarCargaDeHorasInexistenteTiraExcepcion() {
+    String cargaId = UUID.randomUUID().toString();
+
+    when(cargaDeHorasRepository.findById(cargaId)).thenReturn(java.util.Optional.empty());
+
+    Exception exception =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> cargaDeHorasService.eliminarCargaDeHoras(cargaId));
+
+    assertEquals("No existe la carga de horas con ID: " + cargaId, exception.getMessage());
+
+    verify(cargaDeHorasRepository, never()).delete(any(CargaDeHoras.class));
+    verify(cargaDeHorasRepository, never()).save(any(CargaDeHoras.class));    
+  }
 }

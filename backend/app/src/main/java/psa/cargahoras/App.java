@@ -89,15 +89,10 @@ public class App {
   public ResponseEntity<?> modificarCargaDeHoras(@RequestBody Map<String, Object> request) {
     try {
       CargaDeHoras cargaActualizada = extraerCargaDeHoras(request);
-      // TODO: Implementar la funcionalidad de actualizacion
-      //
-      // En caso de que el id sea invalido y no haya una carga con dicho
-      // id, retornar HttpStatus.NOT_FOUND.
-      //
-      // En caso de otro error en los parametros tirar
-      // HttpStatus.BAD_REQUEST.
-      //
+      cargaDeHorasService.modificarCargaDeHoras(cargaActualizada);
       return new ResponseEntity<>(cargaActualizada, HttpStatus.OK);
+    } catch(IllegalArgumentException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     } catch (Exception e) {
       return new ResponseEntity<>(
           "Error interno del servidor: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

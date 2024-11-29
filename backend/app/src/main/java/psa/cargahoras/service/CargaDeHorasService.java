@@ -160,4 +160,16 @@ public class CargaDeHorasService {
 
     cargaHorasRepository.delete(carga);
   }
+
+  public void modificarCargaDeHoras(CargaDeHoras cargaModificada) {
+    CargaDeHoras cargaVieja =
+        cargaHorasRepository
+            .findById(cargaModificada.getId())
+            .orElseThrow(
+                () ->
+                    new IllegalArgumentException("No existe la carga de horas con ID: " + cargaModificada.getId()));
+  
+    cargaHorasRepository.delete(cargaVieja);
+    cargaHorasRepository.save(cargaModificada);
+  }
 }
