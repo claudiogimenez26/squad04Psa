@@ -3,12 +3,15 @@ package psa.cargahoras.service;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import psa.cargahoras.dto.CargaDeHorasDTO;
 import psa.cargahoras.dto.CargaDeHorasPorRecursoDTO;
 import psa.cargahoras.dto.ProyectoDTO;
 import psa.cargahoras.dto.RecursoDTO;
@@ -28,10 +31,37 @@ public class CargaDeHorasService {
     this.apiExternaService = apiExternaService;
   }
 
+  @Transactional(readOnly = true)
   public List<CargaDeHoras> obtenerCargasDeHoras() {
     return cargaHorasRepository.findAll();
   }
 
+  @Transactional(readOnly = true)
+  public Map<String, List<CargaDeHorasDTO>> obtenerCargasDeHorasConTarea() {
+    List<TareaDTO> tareas = apiExternaService.getTareas();
+    Map<String, TareaDTO> tareaMap =
+        tareas.stream().collect(Collectors.toMap(TareaDTO::getId, tarea -> tarea));
+
+    return cargaHorasRepository.findAll().stream()
+        .map(
+            carga -> {
+              TareaDTO tarea = tareaMap.get(carga.getTareaId());
+              String tareaNombre = tarea != null ? tarea.getNombre() : "Tarea no encontrada";
+
+              return new AbstractMap.SimpleEntry<>(
+                  carga.getRecursoId(),
+                  new CargaDeHorasDTO(
+                      carga.getId(),
+                      tareaNombre,
+                      carga.getCantidadHoras(),
+                      carga.getFechaCarga().format(CargaDeHoras.formatterFecha)));
+            })
+        .collect(
+            Collectors.groupingBy(
+                Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
+  }
+
+  @Transactional(readOnly = true)
   public List<CargaDeHoras> obtenerCargasDeHorasPorProyecto(String proyectoId) {
     boolean existeProyecto =
         apiExternaService.getProyectos().stream()
@@ -57,6 +87,7 @@ public class CargaDeHorasService {
     return cargasDeHoras;
   }
 
+  @Transactional(readOnly = true)
   public List<CargaDeHorasPorRecursoDTO> obtenerCargasDeHorasPorRecurso(
       String recursoId, LocalDate fechaInicio, LocalDate fechaFin) {
     Set<String> recursos =
@@ -124,6 +155,7 @@ public class CargaDeHorasService {
         .collect(Collectors.toList());
   }
 
+  @Transactional
   public CargaDeHoras cargarHoras(CargaDeHoras nuevaCarga) {
     List<TareaDTO> tareas = apiExternaService.getTareas();
     List<String> recursos =
@@ -150,6 +182,7 @@ public class CargaDeHorasService {
     return nuevaCarga;
   }
 
+  @Transactional
   public void eliminarCargaDeHoras(String cargaId) {
     CargaDeHoras carga =
         cargaHorasRepository

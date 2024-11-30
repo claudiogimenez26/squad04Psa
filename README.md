@@ -8,3 +8,8 @@
 | Daniel Mamani | 109932 |
 | Claudio Gimenez | 105509 |
 | Santiago Rocco | 109741 |
+| Jonatan Gomez Godoy | 91629 |  
+
+# Pagina del sistema
+
+La página web del sistema se encuentra en el siguiente link: https://psa-carga-horas-frontend.fly.dev/

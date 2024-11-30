@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import psa.cargahoras.dto.CargaDeHorasPorRecursoDTO;
 import psa.cargahoras.dto.CostoMensualDTO;
 import psa.cargahoras.dto.CostoRecursoDTO;
@@ -54,6 +55,7 @@ public class RecursoService {
     this.cargaDeHorasService = cargaDeHorasService;
   }
 
+  @Transactional(readOnly = true)
   public List<CostoRecursoDTO> obtenerCostosDeRecursos() {
     List<RecursoDTO> recursos = apiExternaService.getRecursos();
 
@@ -62,6 +64,7 @@ public class RecursoService {
         .toList();
   }
 
+  @Transactional(readOnly = true)
   public List<CostoRecursoDTO> obtenerCostosDeTodosLosRecursos(List<CargaDeHoras> cargasDeHoras) {
     List<RecursoDTO> recursos = apiExternaService.getRecursos();
     return recursos.stream()
@@ -69,6 +72,7 @@ public class RecursoService {
         .toList();
   }
 
+  @Transactional(readOnly = true)
   public CostoRecursoDTO obtenerCostoPorRecurso(
       String recursoId, LocalDate fechaInicio, LocalDate fechaFin) {
     RecursoDTO recursoBuscado =
@@ -102,6 +106,7 @@ public class RecursoService {
         costoTotal);
   }
 
+  @Transactional(readOnly = true)
   public List<ResumenCostoRecursoDTO> obtenerCostosPorRecursoPorProyecto(
       String proyectoId, LocalDate fechaInicio, LocalDate fechaFin) {
     List<CargaDeHoras> cargasDelProyecto =
@@ -169,6 +174,7 @@ public class RecursoService {
         .collect(Collectors.toList());
   }
 
+  @Transactional(readOnly = true)
   public CostoRecursoDTO obtenerCostoPorRecurso(
       String recursoId, List<CargaDeHoras> cargasDeHoras) {
     RecursoDTO recursoBuscado = obtenerRecurso(recursoId);

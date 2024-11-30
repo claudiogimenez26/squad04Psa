@@ -1,6 +1,6 @@
 "use client";
 
-import { Recurso } from "@/_lib/tipos";
+import { CargasDeHorasPorRecurso, Recurso } from "@/_lib/tipos";
 import {
   createContext,
   Dispatch,
@@ -9,7 +9,11 @@ import {
   useState
 } from "react";
 
-type State = { recursos: Recurso[]; recursoActual: Recurso | null };
+type State = {
+  recursos: Recurso[];
+  recursoActual: Recurso | null;
+  cargas: CargasDeHorasPorRecurso;
+};
 type Action = { payload: Recurso };
 
 export const RecursoActualContext = createContext<{
@@ -24,13 +28,16 @@ function reducer(state: State, action: Action): State {
 
 export default function RecursoActualContextProvider({
   recursos,
+  cargas,
   children
 }: {
   recursos: Recurso[];
+  cargas: CargasDeHorasPorRecurso;
   children: React.ReactNode;
 }) {
   const [state, dispatch] = useReducer(reducer, {
     recursos,
+    cargas,
     recursoActual: recursos[0]
   });
 

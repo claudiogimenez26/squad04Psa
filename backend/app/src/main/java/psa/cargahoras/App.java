@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import psa.cargahoras.dto.CargaDeHorasDTO;
 import psa.cargahoras.dto.CargaDeHorasPorRecursoDTO;
 import psa.cargahoras.dto.ProyectoDTO;
 import psa.cargahoras.dto.RecursoDTO;
@@ -46,12 +47,13 @@ public class App {
   @Autowired private RecursoService recursoService;
 
   @GetMapping("/carga-de-horas")
-  public ResponseEntity<List<CargaDeHoras>> obtenerCargasDeHoras() {
+  public ResponseEntity<?> obtenerCargasDeHoras() {
     try {
-      List<CargaDeHoras> cargas = cargaDeHorasService.obtenerCargasDeHoras();
+      Map<String, List<CargaDeHorasDTO>> cargas =
+          cargaDeHorasService.obtenerCargasDeHorasConTarea();
       return new ResponseEntity<>(cargas, HttpStatus.OK);
     } catch (Exception e) {
-      return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
