@@ -1,75 +1,93 @@
-import { CostosDeRecursosPorProyecto } from "@/_lib/tipos";
+import React from "react";
 
-export default async function ({
+type CostoRecurso = {
+  id: string;
+  nombre: string;
+  rol: string;
+  costoRol: number;
+  costos: { mes: string; cantidadHoras: number }[];
+};
+
+export default async function CostosPorRecurso({
   params,
-  searchParams
+  searchParams,
 }: {
-  params: Promise<{ proyectoId: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  params: { proyectoId: string };
+  searchParams: { fechaInicio?: string; fechaFin?: string };
 }) {
-  const proyectoId = (await params).proyectoId;
-  const searchParamsDict = await searchParams;
-
-  let fechaInicio = searchParamsDict["fechaInicio"];
-  let fechaFin = searchParamsDict["fechaFin"];
-
-  if (
-    fechaInicio &&
-    fechaFin &&
-    typeof fechaInicio != "string" &&
-    typeof fechaFin != "string"
-  ) {
-    fechaInicio = fechaInicio[0];
-    fechaFin = fechaFin[0];
-  }
+  const { proyectoId } = params;
+  const { fechaInicio, fechaFin } = searchParams;
 
   const url = `${process.env.BACKEND_URL}/proyectos/${proyectoId}/recursos?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
   const res = await fetch(url);
 
-  let costosPorRecurso: CostosDeRecursosPorProyecto[] = [];
-
+  let costosPorRecurso: CostoRecurso[] = [];
   try {
     costosPorRecurso = await res.json();
   } catch (e) {
     console.error(e);
   }
 
-  if (!costosPorRecurso) {
-    return null;
-  }
-
-  if (costosPorRecurso.length === 0) {
-    return <div>Proyecto no tiene horas cargas en este rango de fechas</div>;
+  if (!costosPorRecurso || costosPorRecurso.length === 0) {
+    return <div>No hay datos de costos para este proyecto.</div>;
   }
 
   return (
-    <div className="space-y-12">
-      {costosPorRecurso.map((r) => (
-        <div key={r.id} className="space-y-3">
-          <h2 className="text-xl font-semibold">{r.nombre}</h2>
-          <div className="space-y-1">
-            <p>
-              {r.rol} (Costo p/hora: {r.costoRol})
-            </p>
-            <p>
-              Costo total en el período:{" "}
-              {r.costos.reduce((acc, curr) => acc + curr.cantidadHoras, 0) *
-                r.costoRol}
-            </p>
-          </div>
-          <ul key={r.id} className="grid grid-cols-3 gap-4">
-            {r.costos.map((mes) => (
-              <li
-                key={`${r.id}-${mes.mes}`}
-                className="p-4 border rounded-lg border-gray-300"
+    <div className="overflow-x-auto">
+      <table className="min-w-full table-auto border-collapse border border-gray-300">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="border border-gray-300 p-2">Recurso</th>
+            <th className="border border-gray-300 p-2">Rol</th>
+            <th className="border border-gray-300 p-2">Costo por Hora</th>
+            <th className="border border-gray-300 p-2">Mes</th>
+            <th className="border border-gray-300 p-2">Horas</th>
+            <th className="border border-gray-300 p-2">Costo Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {costosPorRecurso.map((recurso) =>
+            recurso.costos.map((costo, index) => (
+              <tr
+                key={`${recurso.id}-${costo.mes}-${index}`}
+                className="text-center"
               >
-                <p>Mes: {mes.mes[0].toUpperCase() + mes.mes.slice(1)}</p>
-                <p>Horas: {mes.cantidadHoras}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+                {index === 0 && (
+                  <>
+                    <td
+                      rowSpan={recurso.costos.length}
+                      className="border border-gray-300 p-2 font-semibold"
+                    >
+                      {recurso.nombre}
+                    </td>
+                    <td
+                      rowSpan={recurso.costos.length}
+                      className="border border-gray-300 p-2"
+                    >
+                      {recurso.rol}
+                    </td>
+                    <td
+                      rowSpan={recurso.costos.length}
+                      className="border border-gray-300 p-2"
+                    >
+                      {recurso.costoRol}
+                    </td>
+                  </>
+                )}
+                <td className="border border-gray-300 p-2">
+                  {costo.mes[0].toUpperCase() + costo.mes.slice(1)}
+                </td>
+                <td className="border border-gray-300 p-2">
+                  {costo.cantidadHoras}
+                </td>
+                <td className="border border-gray-300 p-2">
+                  {costo.cantidadHoras * recurso.costoRol}
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }
