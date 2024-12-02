@@ -3,8 +3,7 @@
 import { useEffect } from "react";
 
 export default function Error({
-  error,
-  reset
+  error
 }: {
   error: Error & { digest?: string };
   reset: () => void;
@@ -13,5 +12,5 @@ export default function Error({
     console.error(error);
   }, [error]);
 
-  return <div>Error, preguntarle a Carlos</div>;
+  return <div>Error interno de renderización</div>;
 }

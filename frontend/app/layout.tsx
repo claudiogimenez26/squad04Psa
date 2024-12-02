@@ -1,5 +1,6 @@
 import "./globals.css";
 
+import IndicadorRecursoActual from "@/_componentes/IndicadorRecursoActual";
 import RecursoActualContextProvider from "@/_context/recursoActualContext";
 import { CargasDeHorasPorRecurso, Recurso } from "@/_lib/tipos";
 import {
@@ -9,7 +10,6 @@ import {
   NavbarLink
 } from "flowbite-react";
 import { Inter } from "next/font/google";
-import IndicadorRecursoActual from "./IndicadorRecursoActual";
 
 export const dynamic = "force-dynamic";
 

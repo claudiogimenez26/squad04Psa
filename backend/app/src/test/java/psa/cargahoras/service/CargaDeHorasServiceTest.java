@@ -460,7 +460,8 @@ public class CargaDeHorasServiceTest {
     CargaDeHoras cargaModificada = new CargaDeHoras("tareaId", "recursoId", 10.0, "20/11/2024");
     cargaModificada.setId(cargaId);
 
-    when(cargaDeHorasRepository.findById(cargaModificada.getId())).thenReturn(java.util.Optional.of(carga));
+    when(cargaDeHorasRepository.findById(cargaModificada.getId()))
+        .thenReturn(java.util.Optional.of(carga));
 
     cargaDeHorasService.modificarCargaDeHoras(cargaModificada);
 
@@ -482,6 +483,6 @@ public class CargaDeHorasServiceTest {
     assertEquals("No existe la carga de horas con ID: " + cargaId, exception.getMessage());
 
     verify(cargaDeHorasRepository, never()).delete(any(CargaDeHoras.class));
-    verify(cargaDeHorasRepository, never()).save(any(CargaDeHoras.class));    
+    verify(cargaDeHorasRepository, never()).save(any(CargaDeHoras.class));
   }
 }

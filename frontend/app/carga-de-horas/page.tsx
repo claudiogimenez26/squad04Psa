@@ -1,6 +1,6 @@
+import SelectorRecurso from "@/_componentes/SelectorRecurso";
 import type { Proyecto, Tarea } from "@/_lib/tipos";
 import Formulario from "./Formulario";
-import SelectorRecurso from "@/SelectorRecurso";
 
 export default async function () {
   const [proyectos, tareas] = (await Promise.all([

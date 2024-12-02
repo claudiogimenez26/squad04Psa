@@ -1,9 +1,7 @@
 "use client";
 
 import ResumenCargaDeHoras from "@/_componentes/ResumenCargaDeHoras";
-// import { router } from "next/navigation";
-import { RecursoActualContext } from "@/_context/recursoActualContext";
-import { CargaDeHoras, Proyecto, Tarea } from "@/_lib/tipos";
+import { Proyecto, Tarea } from "@/_lib/tipos";
 import { DevTool } from "@hookform/devtools";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -15,14 +13,13 @@ import {
   Select,
   TextInput
 } from "flowbite-react";
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
+import React, { useState } from "react";
 import { Control, Controller, FieldErrors, useForm } from "react-hook-form";
 import { z } from "zod";
-import { modificarCargadeHoras as cargarHorasAction, modificarCargadeHoras } from "./modificarCargaDeHoras";
+import { modificarCargaDeHoras } from "./action";
 
 const schema = z.object({
-  proyectoId: z.string(),
-  tareaId: z.string(),
   cantidadHoras: z
     .number({
       required_error: "Requerido"
@@ -41,73 +38,47 @@ type Schema = z.infer<typeof schema>;
 export default function FormularioModificacion({
   proyectos,
   tareas,
-  cargas,
-  cargaModificadaId
+  cargas
 }: {
   proyectos: Proyecto[];
   tareas: Tarea[];
-  cargas: CargaDeHoras[];
-  cargaModificadaId: string;
+  cargas: {
+    idCarga: string;
+    nombreTarea: string;
+    cantidadHoras: number;
+    fechaCarga: string;
+    tareaId: string;
+    recursoId: string;
+  }[];
 }) {
+  const pathName = usePathname();
+  const cargaDeHorasId = pathName.split("/").at(-1);
+
+  const cargaDeHoras = cargas.find((c) => c.idCarga === cargaDeHorasId)!;
+  const tarea = tareas.find((t) => t.id === cargaDeHoras.tareaId)!;
+  const proyecto = proyectos.find((p) => p.id === tarea.proyectoId)!;
+
   const [modalAbierto, setModalAbierto] = useState(false);
   const [esperandoRespuesta, setEsperandoRespuesta] = useState(false);
   const [resultadoServerAction, setResultadoServerAction] = useState<Awaited<
-    ReturnType<typeof cargarHorasAction>
+    ReturnType<typeof modificarCargaDeHoras>
   > | null>(null);
 
-  const recursoActualContext = useContext(RecursoActualContext);
-  if (!recursoActualContext || !recursoActualContext.state?.recursoActual) {
-    return null;
-  }
-  const recursoActual = recursoActualContext.state.recursoActual;
-
-  const proyectoCarga = useMemo(() => {
-    return proyectos.filter((proyecto) =>
-      tareas.some((tarea) => tarea.proyectoId === proyecto.id)
-    );
-  }, [proyectos, tareas]);
-  const proyecto = proyectoCarga[0];
+  const [dia, mes, anio] = cargaDeHoras.fechaCarga.split("/");
+  const fechaCarga = new Date(Number(anio), Number(mes) - 1, Number(dia));
 
   const {
     control,
     formState: { errors },
     getValues,
-    handleSubmit,
-    setError,
-    watch,
-    reset,
-    setValue
+    handleSubmit
   } = useForm<Schema>({
     resolver: zodResolver(schema),
     defaultValues: {
-      proyectoId: proyecto.id,
-      tareaId: tareas.find((t) => t.proyectoId === proyecto.id)!.id,
-      cantidadHoras: 0,
-      fechaCarga: new Date()
+      cantidadHoras: cargaDeHoras.cantidadHoras,
+      fechaCarga
     }
   });
-
-  // const proyectoId = watch("proyectoId");
-  // const proyectoTieneTareas = useMemo(
-  //   () => tareas.some((t) => t.proyectoId === proyectoId),
-  //   [tareas, proyectoId]
-  // );
-
-  useEffect(() => {
-    const tareasDelProyecto = tareas.filter((t) => t.proyectoId === proyecto.id);
-    if (tareasDelProyecto.length > 0) {
-      reset({
-        ...getValues(),
-        proyectoId: proyecto.id,
-        tareaId: tareasDelProyecto[0].id
-      });
-    } else {
-      setError("proyectoId", {
-        type: "manual",
-        message: "Este proyecto no tiene tareas asociadas."
-      });
-    }
-  }, [proyectos, tareas, setValue]);
 
   function handleAbrirModal() {
     handleSubmit(() => {
@@ -119,8 +90,9 @@ export default function FormularioModificacion({
     const data = getValues();
     const formData = new FormData();
 
-    formData.append("tareaId", data.tareaId.toString());
-    formData.append("recursoId", recursoActual.id);
+    formData.append("cargaId", cargaDeHorasId!.toString());
+    formData.append("recursoId", cargaDeHoras.recursoId);
+    formData.append("tareaId", tarea.id);
     formData.append("cantidadHoras", data.cantidadHoras.toString());
     formData.append(
       "fechaCarga",
@@ -132,7 +104,7 @@ export default function FormularioModificacion({
     );
 
     setEsperandoRespuesta(true);
-    setResultadoServerAction(await modificarCargadeHoras(formData));
+    setResultadoServerAction(await modificarCargaDeHoras(formData));
     setEsperandoRespuesta(false);
 
     setModalAbierto(false);
@@ -153,61 +125,20 @@ export default function FormularioModificacion({
         <div className="grid gap-4 grid-cols-4">
           <div className="col-span-4 space-y-2">
             <Label htmlFor="proyectoId">Seleccione un proyecto</Label>
-            <Controller
-              name="proyectoId"
-              control={control}
-              render={({ field }) => (
-                <Select disabled
-                  id="proyectoId"
-                  {...field}
-                  color={errors.proyectoId && "failure"}
-                  helperText={
-                    errors.proyectoId && (
-                      <span className="font-medium">
-                        {errors.proyectoId.message}
-                      </span>
-                    )
-                  }
-                >
-                  {proyectos.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.id} - {p.nombre}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            />
+            <Select disabled id="proyectoId">
+              <option value={proyecto.id}>
+                {proyecto.id} - {proyecto.nombre}
+              </option>
+            </Select>
           </div>
 
           <div className="col-span-4">
             <Label htmlFor="tareaId">Seleccione una tarea</Label>
-            <Controller
-              name="tareaId"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  id="taredId"
-                  {...field}
-                  color={errors.tareaId && "failure"}
-                  disabled
-                  helperText={
-                    errors.tareaId && (
-                      <span className="font-medium">
-                        {errors.tareaId.message}
-                      </span>
-                    )
-                  }
-                >
-                  {tareas
-                    .filter((t) => t.proyectoId === proyecto.id)
-                    .map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.id} - {t.nombre}
-                      </option>
-                    ))}
-                </Select>
-              )}
-            />
+            <Select id="taredId" disabled>
+              <option value={tarea.id}>
+                {tarea.id} - {tarea.nombre}
+              </option>
+            </Select>
           </div>
 
           <div className="col-span-2">
@@ -224,7 +155,6 @@ export default function FormularioModificacion({
                   maxDate={new Date()}
                   {...field}
                   color={errors.fechaCarga && "failure"}
-                  // disabled={!proyectoTieneTareas}
                   helperText={
                     errors.fechaCarga && (
                       <span className="font-medium">
@@ -254,7 +184,6 @@ export default function FormularioModificacion({
                     )
                   }
                   color={errors.cantidadHoras && "failure"}
-                  // disabled={!proyectoTieneTareas}
                   helperText={
                     errors.cantidadHoras && (
                       <span className="font-medium">
@@ -269,17 +198,15 @@ export default function FormularioModificacion({
         </div>
 
         <div className="flex justify-end">
-          <Button onClick={handleAbrirModal} /*disabled={!proyectoTieneTareas}*/>
-            Modificar carga de horas
-          </Button>
+          <Button onClick={handleAbrirModal}>Modificar carga de horas</Button>
         </div>
 
         <Modal show={modalAbierto} onClose={() => setModalAbierto(false)}>
           <Modal.Header>Confirmar carga de horas</Modal.Header>
           <Modal.Body>
-            <ResumenCargaDeHoras 
-              proyecto={proyectos.find((p) => p.id === getValues().proyectoId)!}
-              tarea={tareas.find((t) => t.id === getValues().tareaId)!}
+            <ResumenCargaDeHoras
+              proyecto={proyecto}
+              tarea={tarea}
               cantidadHoras={getValues().cantidadHoras}
               fechaCarga={getValues().fechaCarga}
             />
@@ -311,7 +238,6 @@ function InputFormulario({
   labelInput,
   className,
   control,
-  proyectoTieneTareas,
   errors,
   children
 }: {
@@ -319,7 +245,6 @@ function InputFormulario({
   labelInput: string;
   className: string;
   control: Control<Schema>;
-  proyectoTieneTareas: boolean;
   errors: FieldErrors<Schema>;
   children: React.ReactElement;
 }) {
@@ -334,8 +259,6 @@ function InputFormulario({
             ...field,
             id: nombreInput,
             name: nombreInput,
-            disabled:
-              nombreInput === "proyectoId" ? false : !proyectoTieneTareas,
             color: errors[nombreInput] && "failure",
             helperText: errors[nombreInput] && (
               <span className="font-medium">{errors[nombreInput].message}</span>

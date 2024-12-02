@@ -1,5 +1,3 @@
-import React from "react";
-
 type CostoRecurso = {
   id: string;
   nombre: string;
@@ -10,7 +8,7 @@ type CostoRecurso = {
 
 export default async function CostosPorRecurso({
   params,
-  searchParams,
+  searchParams
 }: {
   params: Promise<{ proyectoId: string }>;
   searchParams: Promise<{ fechaInicio?: string; fechaFin?: string }>;
