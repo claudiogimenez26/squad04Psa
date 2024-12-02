@@ -1,10 +1,5 @@
-import SelectorRecurso from "./SelectorRecurso";
+import { redirect } from "next/navigation";
 
 export default async function () {
-  return (
-    <div className="flex-1 space-y-6">
-      <h1 className="text-4xl font-bold">Cambiar recurso</h1>
-      <SelectorRecurso />
-    </div>
-  );
+  redirect("/carga-de-horas");
 }

@@ -12,11 +12,11 @@ export default async function CostosPorRecurso({
   params,
   searchParams,
 }: {
-  params: { proyectoId: string };
-  searchParams: { fechaInicio?: string; fechaFin?: string };
+  params: Promise<{ proyectoId: string }>;
+  searchParams: Promise<{ fechaInicio?: string; fechaFin?: string }>;
 }) {
-  const { proyectoId } = params;
-  const { fechaInicio, fechaFin } = searchParams;
+  const { proyectoId } = await params;
+  const { fechaInicio, fechaFin } = await searchParams;
 
   const url = `${process.env.BACKEND_URL}/proyectos/${proyectoId}/recursos?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
   const res = await fetch(url);

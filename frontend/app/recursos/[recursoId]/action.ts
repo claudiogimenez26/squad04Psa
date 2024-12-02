@@ -1,7 +1,5 @@
 "use server";
 
-import { CargaDeHoras } from "@/_lib/tipos";
-
 export async function eliminarCargaHoras(cargaHorasId: string) {
   try {
     const res = await fetch(`${process.env.BACKEND_URL}/carga-de-horas/${cargaHorasId}`, {
